@@ -37,10 +37,11 @@ parameter sweep.
 
 """
 
-import string, time, sys, data.dsi, multiprocessing, gc, itertools, os
+#import string, time, sys, data.dsi, multiprocessing, gc, itertools, os
+import string, time, sys, multiprocessing, gc, itertools, os
 from tvb.simulator.lab import *
 from tvb.simulator.backend.cuda import estnthr, srcmod, arrays_on_gpu
-from tvb.simulator.backend import genc as gen
+#from tvb.simulator.backend import genc as gen
 from numpy import *
 
 model_nsvs = dict(fhn_euler=2, bistable_euler=1)
@@ -130,7 +131,12 @@ if __name__ == '__main__':
     vel, gsc, exc = (logspace(-0.3, 2, ngrid),
                      logspace(-6., -0.5, ngrid),
                      r_[0.8:1.2:ngrid*1j])
-    datasets      = map(data.dsi.load_dataset, [0])
+    #datasets      = map(data.dsi.load_dataset, [0])
+    import collections
+    dataset = collections.namedtuple('distances','weights')
+    dataset.distances, dataset.weights = load('/home/izaak/Forge/TVB/tvb/trunk/scientific_library/tvb/simulator/demos/ds.npy'), load('/home/izaak/Forge/TVB/tvb/trunk/scientific_library/tvb/simulator/demos/ws.npy')
+
+    datasets      = [dataset]
     models        = ['fhn_euler']
     nic           = 32
     dt            = 0.5
