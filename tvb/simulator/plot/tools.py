@@ -480,7 +480,7 @@ if IMPORTED_MAYAVI:
         
         """
         
-        from enthought.tvtk.tools import visual
+        from tvtk.tools import visual
         
         fig = mlab.figure(figure="Connectivity 3D", bgcolor=(0.0, 0.0, 0.0))
         visual.set_viewer(fig)
