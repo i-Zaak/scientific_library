@@ -853,12 +853,10 @@ class ReducedSetFitzHughNagumo(Model):
         beta = state_variables[3, :]
 
         # sum the activity from the modes
-        c_0 = coupling[0, :].sum(axis=1)
+        c_0 = coupling[0, :].sum(axis=1)[:, numpy.newaxis]
 
         #TODO: generalize coupling variables to a matrix form 
         #c_1 = coupling[1, :] # this cv represents alpha
-
-        #import pdb; pdb.set_trace()
 
         dxi = (self.tau * (xi - self.e_i * xi**3 / 3.0 - eta) +
                self.K11 * (numpy.dot(xi, self.Aik) - xi) -
@@ -1309,7 +1307,7 @@ class ReducedSetHindmarshRose(Model):
         beta = state_variables[4, :]
         gamma = state_variables[5, :]
 
-        c_0 = coupling[0, :].sum(axis=1)
+        c_0 = coupling[0, :].sum(axis=1)[:, numpy.newaxis]
         #c_1 = coupling[1, :]
 
         dxi = (eta - self.a_i * xi**3 + self.b_i * xi**2 - tau +
@@ -1330,6 +1328,7 @@ class ReducedSetHindmarshRose(Model):
         dgamma = self.r * self.s * alpha - self.r * gamma - self.n_i
 
         derivative = numpy.array([dxi, deta, dtau, dalpha, dbeta, dgamma])
+
 
         return derivative
 
@@ -1941,7 +1940,23 @@ class Generic2dOscillator(Model):
     |* excitable regime if b=0.6|
     |* oscillatory if b=0.4     |
     -----------------------------
-
+    
+    
+     ---------------------------
+    |  SanzLeonetAl  2013       | 
+     ---------------------------
+    |Parameter     |  Value     |
+    -----------------------------
+    | a            |    - 0.5   |
+    | b            |    -15.0   |
+    | c            |      0.0   |
+    | d            |      0.02  |
+    | I            |      0.0   |
+    -----------------------------
+    |* excitable regime if      |
+    |* intrinsic frequency is   |
+    |  approx 10 Hz             |
+    -----------------------------
 
     .. figure :: img/Generic2dOscillator_01_mode_0_pplane.svg
     .. _phase-plane-Generic2D:
@@ -2102,8 +2117,8 @@ class Generic2dOscillator(Model):
         The equations of the generic 2D population model read
 
         .. math::
-            \dot{V} &= \tau ( W - V^3 +3 V^2 + I) \\
-            \dot{W} &= -(a\, + b\, V + c\, V^2 - \, W) / \tau
+            \dot{V} &= \tau (\alpha W - V^3 +3 V^2 + I) \\
+            \dot{W} &= (a\, + b\, V + c\, V^2 - \, beta W) / \tau
 
         where external currents :math:`I` provide the entry point for local, 
         long-range connectivity and stimulation.
