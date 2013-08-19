@@ -30,6 +30,12 @@ from numpy import *
 
 import driver_conf as dc
 
+from pycuda.elementwise import ElementwiseKernel
+multid_scmul = ElementwiseKernel(
+        "float *a , float b",
+        "a[i] *= b",
+        "multid_scalar_multiply")
+
 using_gpu = getattr(dc, 'using_gpu', 0)
 if __name__ == "__main__":
     using_gpu = int(sys.argv[1]) if len(sys.argv)>1 else using_gpu
@@ -55,7 +61,9 @@ if using_gpu:
     # FIXME this is additive white noise
     def gen_noise_into(devary, dt):
         rng.fill_normal(devary.device)
-        devary *= sqrt(dt)
+        # no multi-d slicing in puCUDA yet, remove when implemented
+        multid_scmul(devary.device, dt)
+        #devary.device *= sqrt(dt) 
 
 else: # using Cpu
     import psutil
@@ -439,7 +447,7 @@ class device_handler(object):
             LOG.warning(msg)
 
         if n_msik > 1:
-            LOG.warning("%r: %s", self, """
+            LOG.warning("%r: %s", cls, """
             implementation of noise & stimulus in the kernel does not allow for
             multiple steps in kernel, but is acceptable for simulations that
             are deterministic, w/o stimulus. 

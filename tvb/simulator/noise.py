@@ -125,14 +125,15 @@ class noise_device_info(object):
         # par1_svar1, par1_svar2... par1_svar1...
         n = 0
         for par in self._pars:
-            attr = getattr(self.inst, par.trait.name)
+            name = par if type(par) in (str, unicode) else par.trait.name
+            attr = getattr(self.inst, name)
             n += attr.size
             # assuming given parameters have correct size
         return n
 
     @property
     def nspr(self):
-        pars = [getattr(self.inst, p.trait.name).flat[:] for p in self._pars]
+        pars = [getattr(self.inst, p).flat[:] for p in self._pars]
         return numpy.hstack(pars)
 
     @property
@@ -365,7 +366,7 @@ class Additive(Noise):
         return g_x
 
     device_info = noise_device_info(
-        pars = [nsig],
+        pars = ["nsig"],
         kernel="""
         float nsig;
         for (int i_svar=0; i_svar<n_svar; i_svar++)
