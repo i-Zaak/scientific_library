@@ -72,9 +72,9 @@ LOG = l.get_logger(__name__)
 def logged(fn):
     @functools.wraps(fn)
     def wrapper(*args, **kwds):
-        #LOG.info('%r called with %r, %r', fn, args, kwds)
+        LOG.info('%r called with %r, %r', fn, args, kwds)
         ret = fn(*args, **kwds)
-        #LOG.info('%r returned %r', fn, ret)
+        LOG.info('%r returned %r', fn, ret)
         return ret
     return wrapper
 
@@ -252,7 +252,8 @@ class par_sweep(object):
         t = lambda : sim.current_step*sim.integrator.dt
         print 'sim.simulation_length', sim.simulation_length
         while t() < sim.simulation_length:
-            self.drv.gen_noise_into(dh.ns)
+            print "simulation time %f" % t()
+            self.drv.gen_noise_into(dh.ns, dh.inpr.cpu[0])
             #FIXME dh.stim[:] = sim.stimulus[sim.current_step] or something
             dh(launch_config)
             for i_out, out in enumerate(self.pump_monitors(sim.current_step, dh)):
@@ -261,7 +262,7 @@ class par_sweep(object):
                     self.monitor_output[i_out][mon_step, ...] = out.copy()
                     self.monitor_steps[i_out] += 1
             sim.current_step += dh.n_msik
-        print 'that took %0.2f s', time() - tic
+        print 'that took %0.2f s' % ( time() - tic )
 
 
         """
@@ -409,34 +410,54 @@ if __name__ == '__main__':
     driver_conf.using_gpu = using_gpu = 1
 
     from tvb.simulator.lab import *
+    import numpy
+    from tvb.simulator.common import get_logger
+    LOG = get_logger(__name__)
 
     # this is test driven devlopment speakin how i can help you
+    LOG.warning('this is test driven devlopment speakin how i can help you')
+
+
+    #PROFILE START
+    #import cProfile, pstats, io
+    #pr = cProfile.Profile()
+    #pr.enable()
 
     model = models.Generic2dOscillator()
     conn = connectivity.Connectivity()
     conn.speed = array([4.0])
     coupling = coupling.Linear(a=0.0152)
 
-    hiss = noise.Additive(nsig=ones((2,))*2**-10)
-    heun = integrators.EulerStochastic(dt=2**-4, noise=hiss)
+    #hiss = noise.Additive(nsig=ones((2,))*2**-10)
+    hiss = noise.Additive(nsig = numpy.array([2**-10,]))
+    #heun = integrators.EulerStochastic(dt=2**-4, noise=hiss)
+    heun = integrators.HeunStochastic(dt=2**-4, noise=hiss)
 
-    mon = (monitors.BoldMultithreaded(period=500.0),
-           monitors.TemporalAverage(period=5.0))
+    #mon = (monitors.BoldMultithreaded(period=500.0),
+    mon = (monitors.TemporalAverage(period=5.0))
 
-    sweep = par_sweep(('coupling.a', True, r_[0:1e-5:64j]),
+    #sweep = par_sweep(('coupling.a', True, r_[0:1e-5:64j]),
+    sweep = par_sweep(('coupling.a', True, r_[-3:3:64j]),
+                ('coupling.b', True, r_[0:20:64j]),
+                ('coupling.c', True, r_[-5:5:64j]),
                 model=model,
                 connectivity=conn,
                 coupling=coupling,
                 integrator=heun,
                 monitors=mon,
+                #simulation_length=1000)
                 simulation_length=1000)
 
-    sweep.n_msik=1 
+    #sweep.n_msik=1 
+    sweep.n_msik=100
     # FIXME else we skip monitors..
     # FIXME and noise/stim array is reused
 
+    
     for i_config, data in enumerate(sweep):
         print i_config
-
+    #PROFILE END
+    #pr.disable()
+    #pr.dump_stats("profile.pstats")
 
     print '__h__ is the guppy memory profiler'
