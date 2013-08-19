@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Filler analyzer: Takes a TimeSeries object and returns a Float.
@@ -47,7 +56,7 @@ class KuramotoIndex(metrics_base.BaseTimeseriesMetricAlgorithm):
     The *order* parameters are :math:`r` and :math:`Psi`.
     
     .. math::
-        r \\exp(i * \\psi) &= \\frac{1}{N}\\,\\sum(\\exp(i*\\theta)
+		r e^{i * \\psi} = \\frac{1}{N}\\,\\sum_{k=1}^N(e^{i*\\theta_k})
     
     The first is the phase coherence of the population of oscillators (KSI) 
     and the second is the average phase.

@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 A collection of plotting functions used by simulator/demos
@@ -340,15 +349,19 @@ if IMPORTED_MAYAVI:
     #TODO: Make, posssibly with a wrapper function, to work directly with 
     #      SurfacePattern object... Inner function name plot_surface
     
-    def plot_surface(surface, name=None):
+    def plot_surface(surface, fig=None, name=None, op=1.0, rep='surface'):
         """
         """
-        fig = mlab.figure(figure=name, fgcolor=(0.5, 0.5, 0.5))
+        if fig is None:
+            fig = mlab.figure(figure=name, fgcolor=(0.5, 0.5, 0.5))
+
         surf_mesh = mlab.triangular_mesh(surface.vertices[:, 0],
                                          surface.vertices[:, 1],
                                          surface.vertices[:, 2],
                                          surface.triangles, 
                                          color=(0.7, 0.67, 0.67),
+                                         opacity= op,
+                                         representation =rep,
                                          figure=fig)
         
         return surf_mesh
@@ -419,8 +432,13 @@ if IMPORTED_MAYAVI:
         """
         Plot a surface and colour it based on a vector of length number of 
         vertices (vertex_colours).
+
+        * How to obtain a pretty picture (from Mayavi's gui): 
+          - set surf_mesh color to rgb(237, 217, 221)
+          - add a surface module derived from surf_mesh; set 'Actor' 
+            representation to wireframe; colour 'gray'.
+          - enable contours of scalar_surf  
         """
-        #TODO: so far, haven't figured out how to overide color with scalars
         #surf_mesh = plot_surface(surface, name="surface pattern")
         fig = mlab.figure(figure="surface pattern", fgcolor=(0.5, 0.5, 0.5))
         surf_mesh = mlab.triangular_mesh(surface.vertices[:, 0],
@@ -429,9 +447,13 @@ if IMPORTED_MAYAVI:
                                          surface.triangles,
                                          figure=fig)
         sm_obj = surf_mesh.mlab_source
-        #sm_obj.set(color=None)
-        sm_obj.set(scalars=vertex_colours)
-        mlab.colorbar(object=surf_mesh, orientation="vertical")
+        scalar_data = surf_mesh.mlab_source.dataset.point_data
+        scalar_data.scalars = vertex_colours
+        scalar_data.scalars.name = 'Scalar data'
+        scalar_data.update()
+        scalar_mesh = mlab.pipeline.set_active_attribute(surf_mesh, point_scalars='Scalar data')
+        scalar_surf = mlab.pipeline.surface(scalar_mesh)
+        mlab.show(stop=True)
         return sm_obj
     
     
@@ -474,16 +496,15 @@ if IMPORTED_MAYAVI:
         """
         Plots a 3D representation of the delayed-connectivity structure.
         See Fig. 3 in (Knock et al 2009)
+
+        [Nodes x Nodes x Delays]
         
         Original script can be found at: 
         BrainNetworkModels_3.1/PlottingTools/PlotConnectivity3D.m
         
         """
-        
         from tvtk.tools import visual
-        
         fig = mlab.figure(figure="Connectivity 3D", bgcolor=(0.0, 0.0, 0.0))
-        visual.set_viewer(fig)
         
         N = connectivity.number_of_regions // 2
         minW = connectivity.weights.min()
@@ -494,7 +515,7 @@ if IMPORTED_MAYAVI:
         
         minD = connectivity.delays.min()
         maxD = connectivity.delays.max()
-        stepD = (maxD - minD) / 100
+        stepD = (maxD - minD) / 10.
         
         if order is None:
             order = numpy.arange(0, N)
@@ -503,24 +524,27 @@ if IMPORTED_MAYAVI:
             edge_cutoff = minW
             
         # colourmap to emphasise large numbers
-        MAP = numpy.loadtxt('colourmaps/BlackToBlue')
-        mapstep = 1. / MAP.shape[0]    
+        #MAP = numpy.loadtxt('../plot/colourmaps/BlackToBlue')
+        #mapstep = 1. / MAP.shape[0]
+       
     
-        # TODO: create a single data source to use mlab scene decorations
         # Loop over connectivity matrix, colouring and one cube per matrix element
+        K = []
+        D = []
+        M = []
+        S = []
         for k in range(N):
             for m in range(N):
                 if connectivity.weights[k,m] != 0:
-                    nlc = (connectivity.weights[k, m] - minW ) / (maxW - minW)
                     if k!=m:
                         #not self connection (diagonal)
                         if connectivity.weights[k, m] > edge_cutoff:
-                            ci = int(max(numpy.floor(nlc / mapstep), 1))
-                            visual.box(x=k + 0.5, 
-                                       y=connectivity.delays[k,m] + stepD, 
-                                       z=m + 0.5,
-                                       color=tuple(MAP[ci-1, 0:3]))               
-        #mlab.show(stop=True)
+                            K.append(k+2.)
+                            D.append(connectivity.delays[k,m] + stepD)
+                            M.append(m + 2.0)
+                            S.append(connectivity.weights[k,m])
+        mlab.points3d(K, D, M, S, mode='cube')               
+        mlab.show(stop=True)
         
         
     #--------------------------------------------------------------------------#
@@ -538,14 +562,14 @@ if IMPORTED_MAYAVI:
         # value of each element.
         
         fig = pyplot.figure(num = fig_name)
-        ax = fig.gca()
+        ax  = fig.gca()
         res = ax.imshow(mat, 
-                         cmap=pyplot.cm.jet, 
-                         interpolation='nearest', 
-                         alpha=0.6)
+                        cmap=pyplot.cm.jet, 
+                        interpolation='nearest', 
+                        alpha=0.6)
         
         if connectivity is not None:
-            order = numpy.arange(connectivity.number_of_regions)
+            order  = numpy.arange(connectivity.number_of_regions)
             labels = connectivity.region_labels
             pyplot.xticks(numpy.arange(connectivity.number_of_regions), list(labels[order]), 
                           fontsize=9, rotation=90)
@@ -553,14 +577,16 @@ if IMPORTED_MAYAVI:
                           fontsize=9)
                           
         fig.colorbar(res)
-        width = mat.shape[0]
+        width  = mat.shape[0]
         height = mat.shape[1]
 
         for x in xrange(width):
             for y in xrange(height):
-                ax.annotate(str(int(mat[x][y])), xy=(y, x), 
+                ax.annotate(str(int(mat[x][y])), 
+                            xy=(y, x), 
                             horizontalalignment='center',
-                            verticalalignment='center', fontsize=7)
+                            verticalalignment='center', 
+                            fontsize=7)
                                     
     
 

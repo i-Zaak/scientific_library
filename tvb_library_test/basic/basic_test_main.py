@@ -18,19 +18,30 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
-"""
-Created on Mar 20, 2013
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
+"""
 .. moduleauthor:: Bogdan Neacsa <bogdan.neacsa@codemart.ro>
 """
+
 if __name__ == "__main__":
     from tvb_library_test import setup_test_console_env
     setup_test_console_env()
-    
-import unittest
 
+
+import unittest
 from tvb_library_test.basic import filters_test
 from tvb_library_test.basic.traits import traits_tests_main
+
+
 
 def suite():
     """
@@ -40,6 +51,7 @@ def suite():
     test_suite.addTest(filters_test.suite())
     test_suite.addTest(traits_tests_main.suite())
     return test_suite
+
 
 
 if __name__ == "__main__":

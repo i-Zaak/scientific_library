@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Module to handle framework specific methods related to noise sources.
@@ -44,9 +53,10 @@ PARAMS_EQUATION = "b_parameters"
 def build_noise(parent_parameters):
     """
     Build Noise entity from dictionary of parameters.
-    :param parent_parameters: dictionary of parameters for the entity having Noise as attribute.
+    :param parent_parameters: dictionary of parameters for the entity having Noise as attribute. \
                               The dictionary is after UI form-submit and framework pre-process.
-    :return Noise entity.
+    :return: Noise entity.
+
     """
 
     if KEY_NOISE not in parent_parameters:

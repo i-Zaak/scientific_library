@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Defines a set of integration methods for both deterministic and stochastic
@@ -27,6 +36,8 @@ Using an integration step size ``dt`` from the following list:
     [0.244140625, 0.1220703125, 0.06103515625, 0.048828125, 0.0244140625, 0.01220703125, 0.009765625, 0.006103515625, 0.0048828125]
 
 will be consistent with Monitor periods corresponding to any of [4096, 2048, 1024, 512, 256, 128] Hz
+
+# TODO: error analysis
 
 .. moduleauthor:: Stuart A. Knock <Stuart@tvb.invalid>
 .. moduleauthor:: Marmaduke Woodman <mw@eml.cc>
@@ -321,10 +332,16 @@ class HeunStochastic(IntegratorStochastic):
         """
 
         noise = self.noise.generate(X.shape)
+        noise_gfun = self.noise.gfun(X)
+        if (noise_gfun.shape != (1,) and noise.shape[0] != noise_gfun.shape[0]):
+            msg = str("Got shape %s for noise but require %s."
+                      " You need to reconfigure noise after you have changed your model."%(
+                       noise_gfun.shape, (noise.shape[0], noise.shape[1])))
+            raise Exception(msg)
 
         #import pdb; pdb.set_trace()
         inter = (X + self.dt * dfun(X, coupling, local_coupling) +
-                 self.noise.gfun(X) * noise + self.dt * stimulus)
+                 noise_gfun * noise + self.dt * stimulus)
 
         dX = (dfun(X, coupling, local_coupling) + 
               dfun(inter, coupling, local_coupling)) * self.dt / 2.0
@@ -457,8 +474,14 @@ class EulerStochastic(IntegratorStochastic):
         noise = self.noise.generate(X.shape)
 
         dX = dfun(X, coupling, local_coupling) * self.dt 
+        noise_gfun = self.noise.gfun(X)
+        if (noise_gfun.shape != (1,) and noise.shape[0] != noise_gfun.shape[0]):
+            msg = str("Got shape %s for noise but require %s."
+                      " You need to reconfigure noise after you have changed your model."%(
+                       noise_gfun.shape, (noise.shape[0], noise.shape[1])))
+            raise Exception(msg)
 
-        return X + dX + self.noise.gfun(X) * noise + self.dt * stimulus
+        return X + dX + noise_gfun * noise + self.dt * stimulus
 
     device_info = integrator_device_info(
         pars = ['dt'],

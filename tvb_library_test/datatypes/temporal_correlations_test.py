@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Created on Mar 20, 2013
 
@@ -34,6 +43,9 @@ from tvb.datatypes import temporal_correlations, time_series
 from tvb_library_test.base_testcase import BaseTestCase
         
 class TemporalCorrelationsTest(BaseTestCase):
+    """
+    Tests the defaults for `tvb.datatypes.temporal_correlations` module.
+    """
     
     def test_crosscorrelation(self):
         data = numpy.random.random((10, 10))

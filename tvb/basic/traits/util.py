@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 All the little functions that make life nicer in the Traits package.
@@ -25,13 +34,16 @@ All the little functions that make life nicer in the Traits package.
 .. moduleauthor:: Lia Domide <lia.domide@codemart.ro>
 .. moduleauthor:: marmaduke <duke@eml.cc>
 """
+
 import numpy
-import collections, inspect  
+import collections
+import inspect
 from tvb.basic.config.settings import TVBSettings
 
 
 # returns true if key is, by convention, public
 ispublic = lambda key: key[0] is not '_'
+
 
 
 def read_list_data(full_path, dimensions=None, dtype=numpy.float64, skiprows=0, usecols=None):
@@ -44,7 +56,8 @@ def read_list_data(full_path, dimensions=None, dtype=numpy.float64, skiprows=0, 
     return array_result
 
 
-def str_class_name(thing, short_form = False):
+
+def str_class_name(thing, short_form=False):
     """
     A helper function that tries to generate an informative name for its
     argument: when passed a class, return its name, when passed an object
@@ -61,7 +74,8 @@ def str_class_name(thing, short_form = False):
         return str(thing)
 
 
-def get(obj, key, default = None):
+
+def get(obj, key, default=None):
     """
     get() is a general function allowing us to ignore whether we are
     getting from a dictionary or object. If obj is a dictionary, we
@@ -74,7 +88,8 @@ def get(obj, key, default = None):
     else:
         return getattr(obj, key) if hasattr(obj, key) else default
 
-   
+
+
 def log_debug_array(log, array, array_name, owner=""):
     """
     Simple access to debugging info on an array.
@@ -82,12 +97,12 @@ def log_debug_array(log, array, array_name, owner=""):
     if TVBSettings.TRAITS_CONFIGURATION.use_storage:
         return
         # Hide this logs in web-mode, with storage, because we have multiple storage exceptions
-        
+
     if owner != "":
         name = ".".join((owner, array_name))
     else:
         name = array_name
-    
+
     if array is not None and hasattr(array, 'shape'):
         shape = str(array.shape)
         dtype = str(array.dtype)
@@ -100,11 +115,12 @@ def log_debug_array(log, array, array_name, owner=""):
         log.debug("%s maximum: %s" % (name, array_max))
         log.debug("%s minimum: %s" % (name, array_min))
     else:
-        log.debug("%s is None or not Array" % (name))
+        log.debug("%s is None or not Array" % name)
 
 
 
 Args = collections.namedtuple('Args', 'pos kwd')
+
 
 
 class TypeRegister(list):
@@ -113,7 +129,8 @@ class TypeRegister(list):
     classes inheriting from Traits classes.
     """
 
-    def subclasses(self, obj, avoid_subclasses = False):
+
+    def subclasses(self, obj, avoid_subclasses=False):
         """
         The subclasses method takes a class (or given instance object, will use
         the class of the instance), and returns a list of all options known to
@@ -124,17 +141,17 @@ class TypeRegister(list):
         """
 
         cls = obj if inspect.isclass(obj) else obj.__class__
-        
+
         if avoid_subclasses:
             return [cls]
-        
+
         if hasattr(cls, '_base_classes'):
             bases = cls._base_classes
         else:
             bases = []
 
-        sublcasses = [opt for opt in self if (issubclass(opt, cls) or cls in opt.__bases__) 
-                                    and not inspect.isabstract(opt) and opt.__name__ not in bases]
+        sublcasses = [opt for opt in self if ((issubclass(opt, cls) or cls in opt.__bases__)
+                                              and not inspect.isabstract(opt) and opt.__name__ not in bases)]
         return sublcasses
 
 

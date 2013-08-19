@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 
@@ -61,7 +70,7 @@ colour_rgb = {"r": numpy.array([255,   0,   0], dtype=numpy.uint8),
               "Y": numpy.array([128, 128,   0], dtype=numpy.uint8)}
 
 
-(surf_mesh, bpts) = surface_parcellation(CORTEX_BOUNDARIES, colouring, mapping_colours, colour_rgb, white_matter)
+(surf_mesh, bpts) = surface_parcellation(CORTEX_BOUNDARIES, colouring, mapping_colours, colour_rgb, interaction=True)
 
 
 

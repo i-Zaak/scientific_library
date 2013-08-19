@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Traits metadata module
@@ -110,11 +119,12 @@ Suggested reading is `Unifying Types and Classes`_ and th `Python data model`_.
 
 """
 
-import core, traited_interface
+import core
+import traited_interface
 from tvb.basic.config.settings import TVBSettings
 
 # Add interfaces based on configured parameter on classes
-setattr(core.Type, TVBSettings.TRAITS_CONFIGURATION.interface_method_name, 
+setattr(core.Type, TVBSettings.TRAITS_CONFIGURATION.interface_method_name,
         traited_interface.TraitedInterfaceGenerator())
 
 

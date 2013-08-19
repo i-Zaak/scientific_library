@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 This module contains a simple file handlers used to log messages
 for different parts of application.
@@ -30,17 +39,19 @@ from logging.handlers import TimedRotatingFileHandler
 from tvb.basic.config.settings import TVBSettings as cfg
 
 
-class SimpleTimedRotatingFileHandler(TimedRotatingFileHandler):  
+
+class SimpleTimedRotatingFileHandler(TimedRotatingFileHandler):
     """
     This is a custom rotating file handler which computes the full path for log file 
     depending on the TVB configuration.
     """
-    
+
+
     def __init__(self, filename, when='h', interval=1, backupCount=0):
         """
         Only set our logging path, and call superclass.
         """
-        log_file =  os.path.join(cfg.TVB_LOG_FOLDER, filename)            
+        log_file = os.path.join(cfg.TVB_LOG_FOLDER, filename)
         TimedRotatingFileHandler.__init__(self, log_file, when, interval, backupCount)
     
     

@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Framework methods for the Temporal Correlation datatypes.
@@ -42,7 +51,7 @@ class CrossCorrelationFramework(temporal_correlations_data.CrossCorrelationData)
         # Do not call super, because that accesses data not-chunked
         self.nr_dimensions = len(self.read_data_shape())
         for i in range(self.nr_dimensions): 
-            setattr(self, 'length_%dd' % (i+1), int(self.read_data_shape()[i]))
+            setattr(self, 'length_%dd' % (i + 1), int(self.read_data_shape()[i]))
     
     
     def read_data_shape(self):
@@ -63,8 +72,7 @@ class CrossCorrelationFramework(temporal_correlations_data.CrossCorrelationData)
         """
         Append chunk.
         """
-        self.store_data_chunk('array_data', partial_result.array_data,
-                              grow_dimension=3, close_file=False)
+        self.store_data_chunk('array_data', partial_result.array_data, grow_dimension=3, close_file=False)
 
 
 

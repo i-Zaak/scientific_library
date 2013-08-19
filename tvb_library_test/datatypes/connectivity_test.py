@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Created on Mar 20, 2013
 
@@ -30,11 +39,14 @@ if __name__ == "__main__":
 import os
 import numpy
 import unittest
-
 from tvb.datatypes import connectivity
 from tvb_library_test.base_testcase import BaseTestCase
-        
+
+
 class ConnectivityTest(BaseTestCase):
+    """
+    Tests the defaults for `tvb.datatypes.connectivity` module.
+    """
     
     def test_connectivity_defaults(self):
         """
@@ -47,7 +59,7 @@ class ConnectivityTest(BaseTestCase):
         self.assertEqual(conn.weights.max(), 3.0)
         self.assertEqual(conn.weights.min(), 0.0)
         self.assertEqual(conn.tract_lengths.shape, (74, 74))
-        self.assertEqual(conn.tract_lengths.max(), 142.1458)
+        self.assertEqual(conn.tract_lengths.max(), 153.48574)
         self.assertEqual(conn.tract_lengths.min(), 0.0)
         self.assertEqual(conn.centres.shape, (74, 3))
         self.assertEqual(conn.orientations.shape, (74, 3))
@@ -86,8 +98,9 @@ class ConnectivityTest(BaseTestCase):
         Reload a connectivity and check that defaults changes accordingly.
         """
         conn = connectivity.Connectivity()
-        conn.default.reload(conn, folder_path = os.path.join("connectivity", 
-                                        "o52r00_irp2008_hemisphere_both_subcortical_true_regions_190"))
+        conn.default.reload(conn,
+                            folder_path=os.path.join("connectivity",
+                                                     "o52r00_irp2008_hemisphere_both_subcortical_true_regions_190"))
         self.assertEqual(conn.weights.shape, (190, 190))
         self.assertEqual(conn.weights.max(), 3.0)
         self.assertEqual(conn.weights.min(), 0.0)
@@ -110,6 +123,32 @@ class ConnectivityTest(BaseTestCase):
         self.assertTrue(conn.saved_selection is None)
         self.assertEqual(conn.parent_connectivity, '')
         
+        
+    def test_connectivity_h5py_reload(self):
+        """
+        Reload a connectivity and check that defaults changes accordingly.
+        """
+        conn = connectivity.Connectivity()
+        conn.default.reload(conn,
+                            folder_path=os.path.join(os.path.dirname(os.path.abspath(__file__))),
+                            file_name="Edited_Connectivity.h5")
+        self.assertEqual(conn.weights.shape, (74, 74))
+        self.assertEqual(conn.weights[0][0], 9.0)   # Edit set first weight to 9
+        self.assertEqual(conn.weights.max(), 9.0)   # Edit has a weight of value 9
+        self.assertEqual(conn.weights.min(), 0.0)
+        self.assertEqual(conn.unidirectional, 0)
+        self.assertEqual(conn.speed, numpy.array([3.0]))
+        self.assertEqual(conn.hemispheres.shape, (0,))
+        self.assertEqual(conn.idelays.shape, (0,))
+        self.assertEqual(conn.delays.shape, (0,))
+        self.assertEqual(conn.number_of_regions, 0)
+        self.assertTrue(conn.parcellation_mask is None)
+        self.assertTrue(conn.nose_correction is None)
+        self.assertTrue(conn.saved_selection is None)
+        self.assertEqual(conn.parent_connectivity, '')
+
+
+
 def suite():
     """
     Gather all the tests in a test suite.

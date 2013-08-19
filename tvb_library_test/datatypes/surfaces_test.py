@@ -18,27 +18,42 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
-"""
-Created on Mar 20, 2013
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
+"""
 .. moduleauthor:: Bogdan Neacsa <bogdan.neacsa@codemart.ro>
 """
+
 if __name__ == "__main__":
     from tvb_library_test import setup_test_console_env
     setup_test_console_env()
-    
-import os
-import sys
+
 try:
     import unittest2 as unittest
-except Exception, _:
+except Exception:
     import unittest
 
-from tvb.datatypes import surfaces
+import os
+import sys
+import tvb.datatypes.surfaces as surfaces
+import tvb.basic.traits.data_readers as readers
 from tvb_library_test.base_testcase import BaseTestCase
-        
+
+
+
 class SurfacesTest(BaseTestCase):
-    
+    """
+    Tests the defaults for `tvb.datatypes.surfaces` module.
+    """
+
     def test_surface(self):
         dt = surfaces.Surface()
         dt.configure()
@@ -63,81 +78,96 @@ class SurfacesTest(BaseTestCase):
         self.assertEqual(dt.get_data_shape('vertices'), (16384, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (16384, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (32760, 3))
-        
-        
+
+
     def test_surface_reload(self):
         dt = surfaces.Surface()
-        dt.default.reload(dt, folder_path = os.path.join("surfaces", "cortex_tvb_whitematter"))
+        dt.default.reload(dt, folder_path=os.path.join("surfaces", "cortex_tvb_whitematter"))
         self.assertEqual(dt.get_data_shape('vertices'), (81924, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (81924, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (163840, 3))
-        
-        
+
+
     def test_corticalsurface(self):
         dt = surfaces.CorticalSurface()
         self.assertEqual(dt.get_data_shape('vertices'), (81924, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (81924, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (163840, 3))
-        
-        
+
+
     def test_skinair(self):
         dt = surfaces.SkinAir()
         self.assertEqual(dt.get_data_shape('vertices'), (4096, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (4096, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (8188, 3))
-        
-        
+
+
     def test_brainskull(self):
         dt = surfaces.BrainSkull()
         self.assertEqual(dt.get_data_shape('vertices'), (4096, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (4096, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (8188, 3))
-        
-        
+
+
     def test_skullskin(self):
         dt = surfaces.SkullSkin()
         self.assertEqual(dt.get_data_shape('vertices'), (4096, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (4096, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (8188, 3))
-        
-        
+
+
     def test_eegcap(self):
         dt = surfaces.EEGCap()
         self.assertEqual(dt.get_data_shape('vertices'), (16384, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (16384, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (32760, 3))
-        
-        
+
+
     def test_facesurface(self):
         dt = surfaces.FaceSurface()
         self.assertEqual(dt.get_data_shape('vertices'), (16384, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (16384, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (32760, 3))
-        
-        
+
+
+    def test_subtype_surface_reload(self):
+        dt = surfaces.FaceSurface()
+        dt.default.reload(dt, folder_path=os.path.join("surfaces", "outer_skin_4096"))
+        self.assertEqual(dt.get_data_shape('vertices'), (4096, 3))
+        self.assertEqual(dt.get_data_shape('vertex_normals'), (4096, 3))
+        self.assertEqual(dt.get_data_shape('triangles'), (8188, 3))
+
+
     def test_regionmapping(self):
         dt = surfaces.RegionMapping()
         self.assertEqual(dt.shape, (16384,))
-        
-        
+
+
     def test_localconnectivity(self):
         dt = surfaces.LocalConnectivity()
         self.assertTrue(dt.surface is None)
-        
-    
-    @unittest.skipIf(sys.maxsize <= 2147483647, "Cannot compute local connectivity on 32-bit machine.")    
+
+
+    @unittest.skipIf(sys.maxsize <= 2147483647, "Cannot compute local connectivity on 32-bit machine.")
     def test_cortexdata(self):
+
         dt = surfaces.Cortex()
+        ## Initialize Local Connectivity, to avoid long computation time.
+        reader = readers.File(folder_path="surfaces/cortex_reg13")
+        dt.local_connectivity = surfaces.LocalConnectivity()
+        dt.local_connectivity.matrix = reader.read_data("nearest_neighbour.mat", "LocalCoupling")
+
         dt.configure()
         summary_info = dt.summary_info
-        self.assertTrue(abs(summary_info['Region area, maximum (mm:math:`^2`)']- 9119.4540365252615) < 0.00000001)
+        self.assertTrue(abs(summary_info['Region area, maximum (mm:math:`^2`)'] - 9119.4540365252615) < 0.00000001)
         self.assertTrue(abs(summary_info['Region area, mean (mm:math:`^2`)'] - 3366.2542250541251) < 0.00000001)
         self.assertTrue(abs(summary_info['Region area, minimum (mm:math:`^2`)'] - 366.48271886512993) < 0.00000001)
         self.assertEqual(dt.get_data_shape('vertices'), (16384, 3))
         self.assertEqual(dt.get_data_shape('vertex_normals'), (16384, 3))
         self.assertEqual(dt.get_data_shape('triangles'), (32760, 3))
-        
-        
+
+
+
 def suite():
     """
     Gather all the tests in a test suite.
@@ -145,6 +175,7 @@ def suite():
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(SurfacesTest))
     return test_suite
+
 
 
 if __name__ == "__main__":

@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Created on Mar 20, 2013
 
@@ -37,6 +46,9 @@ from tvb_library_test.base_testcase import BaseTestCase
 class ParametersFactoryTest(BaseTestCase):
     
     def test_traitedsubclassed(self):
+        """
+        Tests successful creation of traited classes.
+        """
         # We imported array so we should have all these traited classes registered
         expected = ['PositionArrayScientific', 'FloatArrayScientific', 'StringArrayScientific', 
                     'IntegerArray', 'IntegerArrayFramework', 'OrientationArrayScientific', 

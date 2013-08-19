@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 A collection of noise related classes and functions.
@@ -124,16 +133,19 @@ class noise_device_info(object):
     def n_nspr(self):
         # par1_svar1, par1_svar2... par1_svar1...
         n = 0
-        for par in self._pars:
-            name = par if type(par) in (str, unicode) else par.trait.name
-            attr = getattr(self.inst, name)
+        for p in self._pars:
+	        p_ = p if type(p) in (str, unicode) else p.trait.name
+            attr = getattr(self.inst, p_)
             n += attr.size
             # assuming given parameters have correct size
         return n
 
     @property
     def nspr(self):
-        pars = [getattr(self.inst, p).flat[:] for p in self._pars]
+        pars = []
+	for p in self._pars:
+	    p_ = p if type(p) in (str, unicode) else p.trait.name
+	    pars.append(getattr(self.inst, p_).flat[:])
         return numpy.hstack(pars)
 
     @property
@@ -336,6 +348,7 @@ class Additive(Noise):
     """
 
     nsig = arrays.FloatArray(
+        configurable_noise = True,
         label = ":math:`D`",
         required = True,
         default = numpy.array([1.0,]),
@@ -366,7 +379,11 @@ class Additive(Noise):
         return g_x
 
     device_info = noise_device_info(
+<<<<<<< HEAD
         pars = ["nsig"],
+=======
+        pars = ['nsig'],
+>>>>>>> upstream/trunk
         kernel="""
         float nsig;
         for (int i_svar=0; i_svar<n_svar; i_svar++)
@@ -398,6 +415,7 @@ class Multiplicative(Noise):
     """
 
     nsig = arrays.FloatArray(
+        configurable_noise = True,
         label = ":math:`D`",
         required = True,
         default = numpy.array([1.0,]),

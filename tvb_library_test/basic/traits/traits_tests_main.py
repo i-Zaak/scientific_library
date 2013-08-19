@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Created on Mar 20, 2013
 
@@ -26,24 +35,26 @@ Created on Mar 20, 2013
 if __name__ == "__main__":
     from tvb_library_test import setup_test_console_env
     setup_test_console_env()
-    
+
+
 import unittest
-from tvb_library_test.basic.traits import data_readers_test
-from tvb_library_test.basic.traits import traits_test
-from tvb_library_test.basic.traits import parametersfactory_test
 from tvb_library_test.basic.traits import core_test
-from tvb_library_test.basic.traits import stand_alone_console
+from tvb_library_test.basic.traits import data_readers_test
+from tvb_library_test.basic.traits import parametersfactory_test
+from tvb_library_test.basic.traits import start_console
+from tvb_library_test.basic.traits import traits_test
+
 
 def suite():
     """
     Gather all the tests in a test suite.
     """
     test_suite = unittest.TestSuite()
+    test_suite.addTest(core_test.suite())
     test_suite.addTest(data_readers_test.suite())
     test_suite.addTest(traits_test.suite())
-    test_suite.addTest(core_test.suite())
     test_suite.addTest(parametersfactory_test.suite())
-    test_suite.addTest(stand_alone_console.suite())
+    test_suite.addTest(start_console.suite())
     return test_suite
 
 

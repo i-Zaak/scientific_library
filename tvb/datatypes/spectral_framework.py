@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 Framework methods for the Spectral datatypes.
@@ -30,6 +39,7 @@ Framework methods for the Spectral datatypes.
 
 import tvb.datatypes.spectral_data as spectral_data
 
+
 class FourierSpectrumFramework(spectral_data.FourierSpectrumData):
     """
     This class exists to add framework methods to FourierSpectrumData.
@@ -41,7 +51,7 @@ class FourierSpectrumFramework(spectral_data.FourierSpectrumData):
         # Do not call super, because that accesses data not-chunked
         self.nr_dimensions = len(self.read_data_shape())
         for i in range(self.nr_dimensions): 
-            setattr(self, 'length_%dd' % (i+1), int(self.read_data_shape()[i]))
+            setattr(self, 'length_%dd' % (i + 1), int(self.read_data_shape()[i]))
     
     def read_data_shape(self):
         """
@@ -59,31 +69,24 @@ class FourierSpectrumFramework(spectral_data.FourierSpectrumData):
         """
         Append chunk.
         """
-        #self.store_data_chunk('array_data', partial_result,
-        #                      grow_dimension=2, close_file=False)
+        #self.store_data_chunk('array_data', partial_result, grow_dimension=2, close_file=False)
         
-        self.store_data_chunk('array_data', partial_result.array_data,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('array_data', partial_result.array_data, grow_dimension=2, close_file=False)
         
         partial_result.compute_amplitude()
-        self.store_data_chunk('amplitude', partial_result.amplitude,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('amplitude', partial_result.amplitude, grow_dimension=2, close_file=False)
         
         partial_result.compute_phase()
-        self.store_data_chunk('phase', partial_result.phase,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('phase', partial_result.phase, grow_dimension=2, close_file=False)
         
         partial_result.compute_power()
-        self.store_data_chunk('power', partial_result.power,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('power', partial_result.power, grow_dimension=2, close_file=False)
         
         partial_result.compute_average_power()
-        self.store_data_chunk('average_power', partial_result.average_power,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('average_power', partial_result.average_power, grow_dimension=2, close_file=False)
         
         partial_result.compute_normalised_average_power()
-        self.store_data_chunk('normalised_average_power',
-                              partial_result.normalised_average_power,
+        self.store_data_chunk('normalised_average_power', partial_result.normalised_average_power,
                               grow_dimension=2, close_file=False)
 
 
@@ -99,7 +102,7 @@ class WaveletCoefficientsFramework(spectral_data.WaveletCoefficientsData):
         # Do not call super, because that accesses data not-chunked
         self.nr_dimensions = len(self.read_data_shape())
         for i in range(self.nr_dimensions): 
-            setattr(self, 'length_%dd' % (i+1), int(self.read_data_shape()[i]))
+            setattr(self, 'length_%dd' % (i + 1), int(self.read_data_shape()[i]))
     
     def read_data_shape(self):
         """
@@ -117,20 +120,16 @@ class WaveletCoefficientsFramework(spectral_data.WaveletCoefficientsData):
         """
         Append chunk.
         """
-        self.store_data_chunk('array_data', partial_result.array_data,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('array_data', partial_result.array_data, grow_dimension=2, close_file=False)
         
         partial_result.compute_amplitude()
-        self.store_data_chunk('amplitude', partial_result.amplitude,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('amplitude', partial_result.amplitude, grow_dimension=2, close_file=False)
         
         partial_result.compute_phase()
-        self.store_data_chunk('phase', partial_result.phase,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('phase', partial_result.phase, grow_dimension=2, close_file=False)
         
         partial_result.compute_power()
-        self.store_data_chunk('power', partial_result.power,
-                              grow_dimension=2, close_file=False)
+        self.store_data_chunk('power', partial_result.power, grow_dimension=2, close_file=False)
 
 
 
@@ -161,8 +160,7 @@ class CoherenceSpectrumFramework(spectral_data.CoherenceSpectrumData):
         """
         Append chunk.
         """
-        self.store_data_chunk('array_data', partial_result.array_data,
-                              grow_dimension=3, close_file=False)
+        self.store_data_chunk('array_data', partial_result.array_data, grow_dimension=3, close_file=False)
                               
 
 class ComplexCoherenceSpectrumFramework(spectral_data.ComplexCoherenceSpectrumData):
@@ -188,10 +186,8 @@ class ComplexCoherenceSpectrumFramework(spectral_data.ComplexCoherenceSpectrumDa
         """
         Append chunk.
         """
-        self.store_data_chunk('cross_spectrum', partial_result.cross_spectrum, 
-                                grow_dimension=2, close_file=False)
+        self.store_data_chunk('cross_spectrum', partial_result.cross_spectrum, grow_dimension=2, close_file=False)
                                 
-        self.store_data_chunk('array_data', partial_result.array_data,
-                               grow_dimension=2, close_file=False)
+        self.store_data_chunk('array_data', partial_result.array_data, grow_dimension=2, close_file=False)
                                
         

@@ -18,27 +18,39 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
-"""
-Created on Apr 8, 2013
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
+"""
 .. moduleauthor:: Bogdan Neacsa <bogdan.neacsa@codemart.ro>
 """
-### Try to import extra module when running with Python 2.6 (where unittest2 is not default)
 try:
     import unittest2 as unittest
-except Exception, _:
+except ImportError:
     import unittest
 from tvb.basic.config.settings import TVBSettings as cfg
 
+
+
 class BaseTestCase(unittest.TestCase):
     """
-        This class should implement basic functionality which 
-        is common to all TVB tests.
+    This class should implement basic functionality which is common to all TVB tests.
     """
+
+
     def setUp(self):
         self.assertFalse(cfg.TRAITS_CONFIGURATION.use_storage)
-    
+
+
     def assertEqual(self, expected, actual, message=""):
-        super(BaseTestCase, self).assertEqual(expected, actual, message + " Expected %s but got %s."%(expected, actual))
+        super(BaseTestCase, self).assertEqual(expected, actual,
+                                              message + " Expected %s but got %s." % (expected, actual))
         
         

@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Framework methods for the Surface DataTypes.
 
@@ -325,7 +334,7 @@ class RegionMappingFramework(surfaces_data.RegionMappingData):
         surface vertex based on a gradient of the neighbor region(s).
         Currently only one vertex is used for determining color (the one 
         indicated by the RegionMapping).
-        :return NumPy array with [[1, 0], [1, 0] ....] of length :param size
+        :return: NumPy array with [[1, 0], [1, 0] ....] of length :param size
         """
         if isinstance(size, (str, unicode)):
             size = int(size)
@@ -339,9 +348,11 @@ class RegionMappingFramework(surfaces_data.RegionMappingData):
         surface vertex based on a gradient of the neighbor region(s).
         For each vertex on the surface, alpha-indices will be the closest
         region-indices
-        :return NumPy array with [[colosest_reg_idx, 0, 0] ....]
-        :param start_idx vertex index on the surface
-        :param end_idx vertex index on the surface
+
+        :param start_idx: vertex index on the surface
+        :param end_idx: vertex index on the surface
+        :return: NumPy array with [[colosest_reg_idx, 0, 0] ....]
+
         """
         if isinstance(start_idx, (str, unicode)):
             start_idx = int(start_idx)

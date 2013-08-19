@@ -1,4 +1,32 @@
 # -*- coding: utf-8 -*-
+#
+#
+#  TheVirtualBrain-Scientific Package. This package holds all simulators, and
+# analysers necessary to run brain-simulations. You can use it stand alone or
+# in conjunction with TheVirtualBrain-Framework Package. See content of the
+# documentation-folder for more details. See also http://www.thevirtualbrain.org
+#
+# (c) 2012-2013, Baycrest Centre for Geriatric Care ("Baycrest")
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation. This program is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+# License for more details. You should have received a copy of the GNU General
+# Public License along with this program; if not, you can download it here
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0
+#
+#
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 A contributed model: Larter
@@ -12,18 +40,14 @@ A contributed model: Larter
 
 # Third party python libraries
 import numpy
+import numexpr
 
 #The Virtual Brain
-try:
-    from tvb.basic.logger.builder import get_logger
-    LOG = get_logger(__name__)
-except ImportError:
-    import logging
-    LOG = logging.getLogger(__name__)
+from tvb.simulator.common import psutil, get_logger
+LOG = get_logger(__name__)
 
 import tvb.datatypes.arrays as arrays
-import tvb.basic.traits.types_basic as basic
-
+import tvb.basic.traits.types_basic as basic 
 import tvb.simulator.models as models
 
 
@@ -218,10 +242,21 @@ class Larter(models.Model):
         it is also provides the default range of phase-plane plots.""",
         order = 20)
     
-    variables_of_interest = arrays.IntegerArray(
+    # variables_of_interest = arrays.IntegerArray(
+    #     label = "Variables watched by Monitors",
+    #     range = basic.Range(lo = 0, hi = 3, step=1),
+    #     default = numpy.array([0, 2], dtype=numpy.int32),
+    #     doc = """This represents the default state-variables of this Model to be
+    #     monitored. It can be overridden for each Monitor if desired. The 
+    #     corresponding state-variable indices for this model are :math:`V = 0`,
+    #     :math:`W = 1`, and :math:`Z = 2`.""",
+    #     order = 21)
+
+    variables_of_interest = basic.Enumerate(
         label = "Variables watched by Monitors",
-        range = basic.Range(lo = 0, hi = 3, step=1),
-        default = numpy.array([0, 2], dtype=numpy.int32),
+        options = ["V", "W", "Z"],
+        default = ["V", "W", "Z"],
+        select_multiple = True,
         doc = """This represents the default state-variables of this Model to be
         monitored. It can be overridden for each Monitor if desired. The 
         corresponding state-variable indices for this model are :math:`V = 0`,
@@ -238,10 +273,10 @@ class Larter(models.Model):
         LOG.info('%s: initing...' % str(self))
         super(Larter, self).__init__(**kwargs)
         
-        self._state_variables = ["V", "W", "Z"]
+        #self._state_variables = ["V", "W", "Z"]
         self._nvar = 3
         
-        self.cvar = numpy.array([0, 2], dtype=numpy.int32)
+        self.cvar = numpy.array([0], dtype=numpy.int32)
         
         LOG.debug('%s: inited.' % repr(self))
     

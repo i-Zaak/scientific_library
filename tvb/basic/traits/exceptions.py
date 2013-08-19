@@ -18,19 +18,36 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 .. moduleauthor:: Calin Pavel
 """
+
+
 
 class TVBException(Exception):
     """
     Base class for all TVB exceptions.
     """
+
+
     def __init__(self, message, parent_exception=None):
         Exception.__init__(self, message, parent_exception)
         self.message = message
 
+
     def __repr__(self):
+        return self.message
+    
+    def __str__(self):
         return self.message
 
 
@@ -39,8 +56,11 @@ class ValidationException(TVBException):
     Exception class for problems that occurs during MappedType 
     validation before storing it into DB.
     """
+
+
     def __init__(self, message):
         TVBException.__init__(self, message)
+
 
 
 class MissingEntityException(TVBException):
@@ -48,15 +68,20 @@ class MissingEntityException(TVBException):
     Exception class used for cases when trying to load an entity
     from database by id or GID and none found.
     """
+
+
     def __init__(self, message):
         TVBException.__init__(self, message)
-   
-        
+
+
+
 class StorageException(TVBException):
     """
     Exception class used for cases when trying to load an entity
     from database by id or GID and none found.
     """
+
+
     def __init__(self, message):
         TVBException.__init__(self, message)
         

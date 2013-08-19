@@ -18,11 +18,28 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
-"""
-Demonstrate using the simulator at the region level with BOLD and 
-continuing the simulation, w/ the goal of avoid the transient when
-restarting.
+"""  
+Demonstrate using the simulator at the region level, stochastic
+integration and the BOLD monitor:   
+
+- how to perform a simulation continuation, that is, to use data from one
+simulation as initial conditions for a second simulation (ie, simulation
+continuation) in order to avoid the temporal transient due to imperfect
+initial conditions.
+
+- how to save the random number generator state. 
+
+.. moduleauthor:: Marmaduke Woodman <mw@eml.cc>
 
 """
 
@@ -175,3 +192,4 @@ figure(2)
 plot(array(bold_time)/1000.0, array(bold_data)[:, 0, :, 0])
 title('continued simulation')
 xlabel('time (s)')
+###EoF###

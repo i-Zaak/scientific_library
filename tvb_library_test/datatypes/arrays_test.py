@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 """
 Created on Mar 20, 2013
 
@@ -112,6 +121,9 @@ class ArraysTest(BaseTestCase):
         
         
     def test_index_array(self):
+        """
+        Create an index array, check that shape is correct.
+        """
         target_data = numpy.random.random((10, 3))
         target_array = arrays.FloatArray()
         target_array.data = target_data

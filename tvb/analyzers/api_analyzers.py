@@ -18,6 +18,16 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
+
 """
 .. moduleauthor:: Paula Sanz Leon <Paula@tvb.invalid>
 
@@ -26,7 +36,6 @@ documentation. Python docstring from the classes listed below will be included.
 
 """
 
-#import tvb.analyzers.auto_correlation as auto_correlation
 import tvb.analyzers.cross_correlation as cross_correlation
 import tvb.analyzers.fft as fft
 import tvb.analyzers.ica as ica
@@ -44,18 +53,17 @@ import tvb.analyzers.wavelet as wavelet
 ### Dictionary {Analyzer Class : Title to appear in final documentation}
 
 ANALYZERS_FOR_DOCUMENTATION = {
-                               #auto_correlation.AutoCorrelation: "Auto-correlation", 
-                               cross_correlation.CrossCorrelate: "Cross-correlation",
-                               fft.FFT: "Fast Fourier Transform (FFT)",
-                               ica.fastICA: "Independent Component Analysis",
-                               pca.PCA: "Principal Components Analysis", 
-                               node_coherence.NodeCoherence: "Node Coherence",
-                               node_complex_coherence.NodeComplexCoherence: "Node Complex Coherence",
-                               node_covariance.NodeCovariance: "Node Covariance", 
-                               wavelet.ContinuousWaveletTransform: "Wavelet", 
-                               metric_variance_global.GlobalVariance: "Global Variance",
-                               metric_variance_of_node_variance.VarianceNodeVariance: "Variance of Node Variance",
-                               metric_kuramoto_index.KuramotoIndex: "Kuramoto Index"
-                               }
+    cross_correlation.CrossCorrelate: "Cross-correlation",
+    fft.FFT: "Fast Fourier Transform (FFT)",
+    ica.fastICA: "Independent Component Analysis",
+    pca.PCA: "Principal Components Analysis",
+    node_coherence.NodeCoherence: "Node Coherence",
+    node_complex_coherence.NodeComplexCoherence: "Node Complex Coherence",
+    node_covariance.NodeCovariance: "Node Covariance",
+    wavelet.ContinuousWaveletTransform: "Wavelet",
+    metric_variance_global.GlobalVariance: "Global Variance",
+    metric_variance_of_node_variance.VarianceNodeVariance: "Variance of Node Variance",
+    metric_kuramoto_index.KuramotoIndex: "Kuramoto Index"
+}
 
 

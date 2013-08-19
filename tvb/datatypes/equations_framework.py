@@ -18,6 +18,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0
 #
 #
+#   CITATION:
+# When using The Virtual Brain for scientific publications, please cite it as follows:
+#
+#   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
+#   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
+#       The Virtual Brain: a simulator of primate brain network dynamics.
+#   Frontiers in Neuroinformatics (in press)
+#
+#
 
 """
 
@@ -134,6 +143,12 @@ class EquationFramework(equations_data.EquationData):
 
     @staticmethod
     def from_json(string):
+        """
+        Retrieves an instance to an equation represented as JSON.
+
+        :param string: the JSON representation of the equation
+        :returns: a `tvb.datatypes.equations_data` equation instance
+        """
         loaded_dict = json.loads(string)
         if loaded_dict is None:
             return None
