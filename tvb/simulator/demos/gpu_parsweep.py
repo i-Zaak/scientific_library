@@ -126,7 +126,7 @@ def launches(datasets, models, vel, gsc, exc, nic, dt, blockDim_x=256, gridDim_x
 
 
 if __name__ == '__main__':
-
+    import time
     ngrid         = 64
     vel, gsc, exc = (logspace(-0.3, 2, ngrid),
                      logspace(-6., -0.5, ngrid),
