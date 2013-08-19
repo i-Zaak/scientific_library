@@ -1000,11 +1000,7 @@ class ReducedSetFitzHughNagumo(Model):
     device_info = model_device_info(
         pars=[
             # given parameters
-<<<<<<< HEAD
-            'tau', 'a' ,    'b' ,    'K11' ,    'K12' ,    'K21' ,    'sigma' ,    'mu',
-=======
             'tau', 'a', 'b', 'K11', 'K12', 'K21', 'sigma', 'mu',
->>>>>>> upstream/trunk
 
             # derived parameters
             'Aik', 'Bik', 'Cik', 'e_i', 'f_i', 'IE_i', 'II_i', 'm_i', 'n_i'
@@ -1880,13 +1876,8 @@ class JansenRit(Model):
 
     device_info = model_device_info(
 
-<<<<<<< HEAD
-        pars = [ 'A', 'B', 'a', 'b', 'v0', 'nu_max', 'r', 'J', 'a_1','a_2', 'a_3', 'a_4', 
-                 'p_min', 'p_max', 'mu'],
-=======
         pars=['A', 'B', 'a', 'b', 'v0', 'nu_max', 'r', 'J', 'a_1', 'a_2', 'a_3', 'a_4',
               'p_min', 'p_max', 'mu'],
->>>>>>> upstream/trunk
 
         kernel="""
         // read parameters
@@ -2233,11 +2224,7 @@ class Generic2dOscillator(Model):
         return self.derivative
 
     device_info = model_device_info(
-<<<<<<< HEAD
-        pars = ['tau', 'a', 'b', 'c', 'd', 'I'],
-=======
         pars=['tau', 'a', 'b', 'c', 'd', 'I'],
->>>>>>> upstream/trunk
         kernel="""
 
         // read parameters
@@ -3119,13 +3106,8 @@ class Kuramoto(Model):
         return self.derivative
 
     device_info = model_device_info(
-<<<<<<< HEAD
-        pars = ['omega'],
-        kernel = """
-=======
         pars=['omega'],
         kernel="""
->>>>>>> upstream/trunk
         float omega = P(0)
             , theta = X(0)
             , c_0 = I(0) ; 

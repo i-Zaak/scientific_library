@@ -134,7 +134,7 @@ class noise_device_info(object):
         # par1_svar1, par1_svar2... par1_svar1...
         n = 0
         for p in self._pars:
-	        p_ = p if type(p) in (str, unicode) else p.trait.name
+            p_ = p if type(p) in (str, unicode) else p.trait.name
             attr = getattr(self.inst, p_)
             n += attr.size
             # assuming given parameters have correct size
@@ -379,11 +379,7 @@ class Additive(Noise):
         return g_x
 
     device_info = noise_device_info(
-<<<<<<< HEAD
-        pars = ["nsig"],
-=======
         pars = ['nsig'],
->>>>>>> upstream/trunk
         kernel="""
         float nsig;
         for (int i_svar=0; i_svar<n_svar; i_svar++)
