@@ -84,11 +84,14 @@ map(reload, [driver, cee, cuda])
 sim = lab.simulator.Simulator(
     model = lab.models.Generic2dOscillator(),
     connectivity = lab.connectivity.Connectivity(speed=300.0),
-    coupling = lab.coupling.Linear(a=1e-2),
-    integrator = lab.integrators.HeunStochastic(
-        dt=2**-5, 
-        noise=lab.noise.Additive(nsig=ones((2, 1, 1))*1e-5)
-    ),
+    #coupling = lab.coupling.Linear(a=1e-2),
+    coupling = lab.coupling.Linear(),
+    #integrator = lab.integrators.HeunStochastic(
+    #    dt=2**-5, 
+    #    noise=lab.noise.Additive(nsig=ones((2, 1, 1))*1e-5)
+    #),
+    #integrator = lab.integrators.HeunDeterministic(),
+    integrator = lab.integrators.EulerDeterministic(),
     monitors = lab.monitors.Raw()
 )
 
@@ -168,6 +171,8 @@ print et1, et2, et2*1./dh.n_thr
 #print ys2.flat[::450]
 savez('debug.npz', ys1=ys1, ys2=ys2)#, ys3=ys3)
 
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as pl
 
 pl.figure(2)

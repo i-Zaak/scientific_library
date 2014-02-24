@@ -83,7 +83,7 @@ class arrays_on_gpu(object):
             print 'GPU mem use %0.2f MB of %0.2f avail.' % (memuse, memavl)
             for k, v in arrays.iteritems():
                 print 'gpu array %s.shape = %r' % (k, v.shape)
-            assert memuse <= memavl
+            assert memuse <= memavl, "will not fit in the card memory"
     
         for key, val in arrays.iteritems():
             setattr(self, key, gary.to_gpu(val))
@@ -241,12 +241,11 @@ class Handler(driver.Handler):
                 'grid' : (gs, 1)}
 
     def __call__(self, extra=None):
-        args  = [self.i_step_type(self.i_step)]
+        args = [self.i_step_type(self.i_step)]
         for k in self.device_state:
             args.append(getattr(self, k).device)
         kwds = extra or self.extra_args
         #try:
-        import pdb; pdb.set_trace()
         self._device_update(*args, **kwds)
         """
         except cuda.LogicError as e:

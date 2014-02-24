@@ -68,7 +68,7 @@ class LibraryProfile():
     TRAITS_CONFIGURATION.use_storage = False
     
     ## Name of file where logging configuration is stored.
-    LOGGER_CONFIG_FILE_NAME = "library_logger.conf"
+    LOGGER_CONFIG_FILE_NAME = "library_debugger.conf"
     
     @ClassProperty
     @staticmethod

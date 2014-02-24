@@ -395,7 +395,6 @@ class Simulator(core.Type):
         ncvar = len(self.model.cvar)
         number_of_regions = self.connectivity.number_of_regions
         nsn = (number_of_regions, 1, number_of_regions)
-        #import pdb; pdb.set_trace()
 
         #Create cvar index array of shape ...
         cvar = numpy.tile(numpy.ones(nsn, dtype=numpy.int32), (1, ncvar, 1))
@@ -462,16 +461,21 @@ class Simulator(core.Type):
         for step in range(self.current_step+1, self.current_step+int_steps+1):
             if self.surface is None:
                 delayed_state = history[(step-1-idelays) % horizon, cvar, node_ids, :]
+                LOG.debug("%s: delayed_state shape is: %s"%(str(self), str(delayed_state.shape)))
                 #coupling._set_pattern(npsum(delayed_state * weights, axis=0))
                 #node_coupling = coupling.pattern
                 node_coupling = coupling(weights, state[self.model.cvar], delayed_state)
+                LOG.debug("%s: node_coupling shape is: %s"%(str(self), str(node_coupling.shape)))
             else:
                 delayed_state = region_history[(step-1-idelays) % horizon, cvar, node_ids, :]
+                LOG.debug("%s: delayed_state shape is: %s"%(str(self), str(delayed_state.shape)))
                 #coupling._set_pattern(npsum(delayed_state * weights, axis=0))
                 #region_coupling = coupling.pattern
                 region_coupling = coupling(weights, state[self.model.cvar], delayed_state)
+                LOG.debug("%s: region_coupling shape is: %s"%(str(self), str(region_coupling.shape)))
                 node_coupling = npdot(self.surface.vertex_mapping, region_coupling)
                 node_coupling = node_coupling.transpose((1, 0, 2))
+                LOG.debug("%s: node_coupling shape is: %s"%(str(self), str(node_coupling.shape)))
                 #import pdb; pdb.set_trace()
             if self.stimulus is not None:
                 stimulus[self.model.cvar, :, :] = numpy.reshape(self.stimulus(step - (self.current_step+1)), (1, -1, 1))

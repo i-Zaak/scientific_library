@@ -81,6 +81,9 @@ def logged(fn):
 # path rel to self. where self is the simulation. eg. integrator.dt
 Par = collections.namedtuple('Par', 'path, streamable, values')
 
+
+using_gpu=1 # ugly global
+
 class par_sweep(object):
     """
     The par_sweep class manages parameter variations and their mapping
@@ -125,11 +128,17 @@ class par_sweep(object):
 
         """
 
-
-        self.kwds = kwds
+        self.kwds = dict(kwds)
         if 'stimulus' in kwds:
             raise NotImplementedError('it will take 5 minutes, plz send patch')
-        self.sim = simulator.Simulator(**kwds)
+        if 'drv' in kwds:
+            self.drv = kwds['drv']
+            del self.kwds['drv']
+        else:
+            LOG.info('initializing backend driver, may take a moment...')
+            from tvb.simulator.backend import driver as drv
+            self.drv = drv
+        self.sim = simulator.Simulator(**self.kwds)
 
         # does it stream?
         yes, no = [], []
@@ -160,12 +169,6 @@ class par_sweep(object):
 
         self.n_msik = 1
 
-        if 'drv' in kwds:
-            self.drv = kwds['drv']
-        else:
-            LOG.info('initializing backend driver, may take a moment...')
-            from tvb.simulator.backend import driver as drv
-            self.drv = drv
 
     @logged
     def __iter__(self):
@@ -217,8 +220,12 @@ class par_sweep(object):
 
         sim = self.next_sim()
         sim.current_step = 0
-        dh = self.drv.device_handler.init_like(sim, self.n_msik)
-        maxthr = self.drv.total_mem/dh.nbytes1
+        #dh = self.drv.device_handler.init_like(sim, self.n_msik)
+        dh = self.drv.Handler.init_like(sim, self.n_msik)
+
+        #maxthr = self.drv.total_mem/dh.nbytes1
+        _, total_mem = dh.mem_info
+        maxthr = total_mem/dh.nbytes1
         
         # how many threads to run?
         if using_gpu:
@@ -322,7 +329,8 @@ class par_sweep(object):
                 continue
 
             # allocate space for output
-            n_out = int(sim.simulation_length / mon.period)
+            #n_out = int(sim.simulation_length / mon.period) 
+            n_out = int(sim.simulation_length / mon.period) + 1 # Does temporal average of 0 make sense?
             out = empty((n_out, len(mon.voi), dh.n_node, dh.n_mode, n_rthr), dtype=float32)
 
             if isinstance(mon, l.monitors.TemporalAverage):
@@ -406,8 +414,11 @@ if __name__ == '__main__':
     from guppy import hpy
     __h__ = hpy()
 
-    from tvb.simulator.backend import driver_conf
-    driver_conf.using_gpu = using_gpu = 1
+    #from tvb.simulator.backend import driver_conf
+    #driver_conf.using_gpu = using_gpu = 1
+    #using_gpu = 1
+    from tvb.simulator.backend import cuda as cuda
+    
 
     from tvb.simulator.lab import *
     import numpy
@@ -428,25 +439,25 @@ if __name__ == '__main__':
     conn.speed = array([4.0])
     coupling = coupling.Linear(a=0.0152)
 
-    #hiss = noise.Additive(nsig=ones((2,))*2**-10)
-    hiss = noise.Additive(nsig = numpy.array([2**-10,]))
+    hiss = noise.Additive(nsig=ones((2,))*2**-10)
     #heun = integrators.EulerStochastic(dt=2**-4, noise=hiss)
-    heun = integrators.HeunStochastic(dt=2**-4, noise=hiss)
+    heun = integrators.HeunDeterministic()
 
     #mon = (monitors.BoldMultithreaded(period=500.0),
     mon = (monitors.TemporalAverage(period=5.0))
 
     #sweep = par_sweep(('coupling.a', True, r_[0:1e-5:64j]),
-    sweep = par_sweep(('coupling.a', True, r_[-3:3:64j]),
-                ('coupling.b', True, r_[0:20:64j]),
-                ('coupling.c', True, r_[-5:5:64j]),
+    #sweep = par_sweep(('coupling.a', True, r_[-3:3:64j]),
+    #            ('coupling.b', True, r_[0:20:64j]),
+    #            ('coupling.c', True, r_[-5:5:64j]),
+    sweep = par_sweep(('coupling.a', True, r_[0:0.1:64j]),
                 model=model,
                 connectivity=conn,
                 coupling=coupling,
                 integrator=heun,
                 monitors=mon,
-                #simulation_length=1000)
-                simulation_length=1000)
+                simulation_length=1000,
+                drv=cuda)
 
     #sweep.n_msik=1 
     sweep.n_msik=100
@@ -460,4 +471,3 @@ if __name__ == '__main__':
     #pr.disable()
     #pr.dump_stats("profile.pstats")
 
-    print '__h__ is the guppy memory profiler'
