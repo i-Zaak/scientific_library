@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -189,10 +189,9 @@ class FilterChain(object):
         data_class = data_name
         if isinstance(data_name, (str, unicode)):
             try:
-                class_ = str(data_name).split(".")[-1]
-                module_ = str(data_name)[:-len(class_) - 1].lstrip().rstrip()
-                data_class = __import__(module_, globals(), locals(), [class_])
-                data_class = eval("data_class." + class_)
+                module_name, class_name = str(data_name).rsplit('.', 1)
+                module = __import__(module_name, globals(), locals(), [class_name])
+                data_class = getattr(module, class_name)
             except Exception, excep:
                 LOGGER.error("Expected DataType full class quantifier! Got:" + str(data_name))
                 LOGGER.exception(excep)
@@ -349,7 +348,8 @@ class UIFilter():
     """
 
 
-    def __init__(self, linked_elem_name, linked_elem_field, linked_elem_parent_name, linked_elem_parent_option):
+    def __init__(self, linked_elem_name, linked_elem_field,
+                 linked_elem_parent_name=None, linked_elem_parent_option=None):
         self.linked_elem_name = linked_elem_name
         self.linked_elem_field = linked_elem_field
         self.linked_elem_parent_name = linked_elem_parent_name

@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -66,7 +66,7 @@ import tvb.simulator.models as models
 import tvb.simulator.integrators as integrators
 
 #NOTE: png files are ~5-10 times smaller than svg, but lower quality on zoom. 
-IMG_SUFFIX = ".pdf" #".png"
+IMG_SUFFIX = ".svg" #".png"
 
 class TestModel(Type):
     """
@@ -283,6 +283,7 @@ if __name__ == '__main__':
     
     from tvb.basic.traits.parameters_factory import get_traited_subclasses
     AVAILABLE_MODELS = get_traited_subclasses(models.Model)
+    ##AVAILABLE_MODELS = {models.LarterBreakspear.__name__: models.LarterBreakspear}
     MODEL_NAMES = AVAILABLE_MODELS.keys()
     
     for model_name in MODEL_NAMES:

@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -373,8 +373,10 @@ class Simulator(core.Type):
         self._calculate_storage_requirement()
 
         if random_state is not None:
-            if self.integrator is integrators_module.IntegratorStochastic:
+            if isinstance(self.integrator, integrators_module.IntegratorStochastic):
                 self.integrator.noise.random_stream.set_state(random_state)
+                #msg = "%s: random_state supplied. Seed is: %s"
+                #LOG.info(msg % str(self, self.integrator.noise.random_stream.get_state()[1][0]))
             else:
                 msg = "%s: random_state supplied for non-stochastic integration"
                 LOG.warn(msg % str(self))
@@ -395,6 +397,7 @@ class Simulator(core.Type):
         ncvar = len(self.model.cvar)
         number_of_regions = self.connectivity.number_of_regions
         nsn = (number_of_regions, 1, number_of_regions)
+        #import pdb; pdb.set_trace()
 
         #Create cvar index array of shape ...
         cvar = numpy.tile(numpy.ones(nsn, dtype=numpy.int32), (1, ncvar, 1))
@@ -439,6 +442,8 @@ class Simulator(core.Type):
                                                   self.number_of_nodes))
                 local_coupling = sp_cs * self.surface.local_connectivity.matrix
 
+            #local_coupling = local_coupling.tocsr()
+
         if self.stimulus is None:
             stimulus = 0.0
         else: #TODO: Consider changing to absolute time...
@@ -471,7 +476,7 @@ class Simulator(core.Type):
                 LOG.debug("%s: delayed_state shape is: %s"%(str(self), str(delayed_state.shape)))
                 #coupling._set_pattern(npsum(delayed_state * weights, axis=0))
                 #region_coupling = coupling.pattern
-                region_coupling = coupling(weights, state[self.model.cvar], delayed_state)
+                region_coupling = coupling(weights, region_history[(step - 1) % horizon, self.model.cvar], delayed_state)
                 LOG.debug("%s: region_coupling shape is: %s"%(str(self), str(region_coupling.shape)))
                 node_coupling = npdot(self.surface.vertex_mapping, region_coupling)
                 node_coupling = node_coupling.transpose((1, 0, 2))
@@ -563,7 +568,7 @@ class Simulator(core.Type):
 
         """
 
-        noise = self.integrator.noise
+        noise = self.integrator.noise        
 
         if self.integrator.noise.ntau > 0.0:
             self.integrator.noise.configure_coloured(self.integrator.dt,
@@ -596,6 +601,7 @@ class Simulator(core.Type):
 
         LOG.debug("Simulator.integrator.noise.nsig shape: %s" % str(nsig.shape))
         self.integrator.noise.nsig = nsig
+        #LOG.debug("Simulator.integrator.noise.random_stream seed is: %s" % str(self.integrator.noise.random_stream.trait.value.get_state()[1][0]))
 
 
     def configure_monitors(self):
@@ -735,7 +741,7 @@ class Simulator(core.Type):
                         memreq += number_of_nodes * 62.0 * bits_64
 
             else:
-                stock_shape = (19200.0 * monitor.tau_s * 2.0**-2, 
+                stock_shape = (monitor.hrf_length * monitor._stock_sample_rate,
                                self.model.variables_of_interest.shape[0],
                                number_of_nodes,
                                self.model.number_of_modes)

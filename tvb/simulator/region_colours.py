@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -211,7 +211,7 @@ class RegionColours(object):
         return (sorted(assignment.keys()) == sorted(self.regions))
 
 
-    def back_track(self, assignment=dict()):
+    def back_track(self, assignment=None):
         """
         A backtracking algorithm for constraint satisfaction. The algorithm uses
         the degree heuristic for the initial variable selection, subsequent
@@ -221,6 +221,9 @@ class RegionColours(object):
         checking inference procedure. See, [AIMA_3rd_2010]_, Sec 6.3, Fig 6.5.
 
         """
+        if assignment is None:
+          assignment = dict()
+            
         if self.iscomplete(assignment):
             LOG.debug("Solution found, returning assignment...")
             return assignment

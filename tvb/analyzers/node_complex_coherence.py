@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -64,8 +64,8 @@ class NodeComplexCoherence(core.Type):
   
     This algorithm is based on the matlab function data2cs_event.m written by Guido Nolte:
         .. [Freyer_2012] Freyer, F.; Reinacher, M.; Nolte, G.; Dinse, H. R. and
-            Ritter, P. * Repetitive tactile stimulation changes resting-state
-            functional connectivity-implications for treatment of sensorimotor decline.*
+            Ritter, P. *Repetitive tactile stimulation changes resting-state
+            functional connectivity-implications for treatment of sensorimotor decline*.
             Front Hum Neurosci, Bernstein Focus State Dependencies of Learning and
             Bernstein Center for Computational Neuroscience Berlin, Germany., 2012, 6, 144
     

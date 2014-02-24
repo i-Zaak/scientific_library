@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -83,7 +83,7 @@ default_cortex = surfaces.Cortex(local_connectivity=grey_matter,
 default_cortex.configure()
 
 # define scalar data to colour the surface 
-lc = default_cortex.local_connectivity.matrixdata[:, 0].todense()
+lc = default_cortex.local_connectivity.matrix[:, 0].todense()
 surface_pattern(default_cortex, lc)
 #Show them
 show()

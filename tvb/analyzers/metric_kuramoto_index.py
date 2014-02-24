@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -78,15 +78,14 @@ class KuramotoIndex(metrics_base.BaseTimeseriesMetricAlgorithm):
     analyzer.
     
     """
-    
+
     time_series = time_series_module.TimeSeries(
-        label = "Time Series", 
-        required = True,
+        label="Time Series",
+        required=True,
         doc="""The TimeSeries for which the Kuramoto Synchronization Index
         will be computed""")
-        
-    
-    accept_filter = FilterChain(operations = ["==", ">="], values = [4, 2],
+
+    accept_filter = FilterChain(operations=["==", ">="], values=[4, 2],
                                 fields=[FilterChain.datatype + '._nr_dimensions', FilterChain.datatype + '._length_2d'])
     
     
@@ -94,14 +93,13 @@ class KuramotoIndex(metrics_base.BaseTimeseriesMetricAlgorithm):
         """
         Kuramoto Synchronization Index
         """
-        cls_attr_name = self.__class__.__name__+".time_series"
-        self.time_series.trait["data"].log_debug(owner = cls_attr_name)
-        
-        
-        if self.time_series.data.shape[1]  < 2:
+        cls_attr_name = self.__class__.__name__ + ".time_series"
+        self.time_series.trait["data"].log_debug(owner=cls_attr_name)
+
+        if self.time_series.data.shape[1] < 2:
             msg = " The number of state variables should be at least 2."
             LOG.error(msg)
-            raise Exception, msg
+            raise Exception(msg)
                 
         #TODO: Should be computed for each possible combination of var, mode
         #      for var, mode in itertools.product(range(self.time_series.data.shape[1]), 
@@ -123,14 +121,14 @@ class KuramotoIndex(metrics_base.BaseTimeseriesMetricAlgorithm):
         """
         Returns the shape of the main result of the ... 
         """
-        return (1,)
+        return (1, )
     
     
     def result_size(self):
         """
         Returns the storage size in Bytes of the results of the ... .
         """
-        return 8.0 #Bytes
+        return 8.0  # Bytes
     
     
     def extended_result_size(self):
@@ -138,6 +136,6 @@ class KuramotoIndex(metrics_base.BaseTimeseriesMetricAlgorithm):
         Returns the storage size in Bytes of the extended result of the ....
         That is, it includes storage of the evaluated ...
         """
-        return 8.0 #Bytes
+        return 8.0  # Bytes
 
 

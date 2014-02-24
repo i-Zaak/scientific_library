@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -132,8 +132,12 @@ class SensorsScientific(sensors_data.SensorsData):
             sensor_tri[k] = local_tri[local_triangle_index]
             #Scale sensor unit vector by t so that it lies on the surface.
             sensor_locations[k] = sensor_loc * tuv[local_triangle_index, 0]
-        
-        return sensor_tri, sensor_locations 
+
+        # sensor_tri seems to be unused
+        # commented to make async data retrieval easy from the ui
+        #return sensor_tri, sensor_locations
+        return sensor_locations
+
 
 
 class SensorsEEGScientific(sensors_data.SensorsEEGData, SensorsScientific):

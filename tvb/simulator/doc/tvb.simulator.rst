@@ -7,17 +7,6 @@
 .. _tvb: http://www.thevirtualbrain.org
 
 
-.. |logo| image:: img/evil_tvb_logo_transparent.svg
-    :alt: The Virtual Brain Project
-    :align: top 
-    :height: 148
-    :target: tvb_
-    
-    
-|logo|
-*******
-
-
 Welcome to tvb.simulator's documentation!
 =========================================
 
@@ -40,9 +29,9 @@ A pdf version of this document can be found here_
    tvb.simulator.noise
    tvb.simulator.monitors
    
-   tvb.simulator.phase_plane_interactive
-   tvb.simulator.power_spectra_interactive
-   tvb.simulator.timeseries_interactive
+   tvb.simulator.plot.phase_plane_interactive
+   tvb.simulator.plot.power_spectra_interactive
+   tvb.simulator.plot.timeseries_interactive
    
    tvb.simulator.devguide
 
@@ -59,11 +48,3 @@ A pdf version of this document can be found here_
 .. #----------
 .. #
 .. #.. todolist::
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

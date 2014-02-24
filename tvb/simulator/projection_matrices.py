@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -194,7 +194,7 @@ class ProjectionMatrix(core.Type):
 
         if isinstance(self.sensors, sensors_module.SensorsEEG):
             self.skin_air.sensors = self.sensors
-            self.skin_air.sensors_to_surface, self.skin_air.sensor_locations = self.sensors.sensors_to_surface(self.skin_air)
+            self.skin_air.sensor_locations = self.sensors.sensors_to_surface(self.skin_air)
 
         # Create OpenMEEG objects from TVB objects.
         self.om_head = self.create_om_head()

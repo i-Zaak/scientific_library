@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -40,6 +40,7 @@ dynamics.
 .. moduleauthor:: Stuart A. Knock <Stuart@tvb.invalid>
 .. moduleauthor:: Noelia Montejo <Noelia@tvb.invalid>
 .. moduleauthor:: Marmaduke Woodman <mw@eml.cc>
+.. moduleauthor:: Paula Sanz Leon <Paula@tvb.invalid>
 
 """
 
@@ -130,7 +131,7 @@ class coupling_device_info(object):
 
     """
 
-    def __init__(self, pars=[], kernel=""):
+    def __init__(self, pars, kernel=""):
         self._pars = pars
         self._kernel = kernel
 
@@ -194,8 +195,8 @@ class Linear(Coupling):
 
 
         """
-        input = (g_ij * x_j).sum(axis=0)
-        return self.a * input + self.b
+        coupled_input = (g_ij * x_j).sum(axis=0)
+        return self.a * coupled_input + self.b
 
     device_info = coupling_device_info(
         pars = ['a', 'b'],
@@ -229,7 +230,7 @@ class Scaling(Coupling):
 
     """
 
-    scaling_factor = basic.Float(
+    a = basic.Float(
         label="Scaling factor",
         default = 0.00390625,
         range = basic.Range(lo = 0.0, hi = 0.2, step = 0.01),
@@ -243,15 +244,15 @@ class Scaling(Coupling):
         evaluated has the following form:
 
             .. math::
-                scaling_factor x 
+                a x 
 
 
         """
-        input = (g_ij * x_j).sum(axis=0)
-        return self.scaling_factor * input
+        coupled_input = (g_ij * x_j).sum(axis=0)
+        return self.a * coupled_input
 
     device_info = coupling_device_info(
-        pars = ['scaling_factor'],
+        pars = ['a'],
         kernel = """
 
         // parameters
@@ -263,6 +264,65 @@ class Scaling(Coupling):
 
         """
         )
+
+
+
+class HyperbolicTangent(Coupling):
+    """
+    Hyperbolic tangent.
+
+    """
+
+    a = arrays.FloatArray(
+        label = ":math:`a`", 
+        default = numpy.array([0.0]),
+        range = basic.Range(lo = -1000.0, hi = 1000.0, step = 10.0),
+        doc = """Minimum of the sigmoid function""",
+        order = 1)
+
+    midpoint = arrays.FloatArray(
+        label = "midpoint", 
+        default = numpy.array([0.0,]),
+        range = basic.Range(lo = -1000.0, hi = 1000.0, step = 10.0),
+        doc = """Midpoint of the linear portion of the sigmoid""",
+        order = 3)
+
+    sigma = arrays.FloatArray(
+        label = r":math:`\sigma`",
+        default = numpy.array([1.0,]),
+        range = basic.Range(lo = 0.01, hi = 1000.0, step = 10.0),
+        doc = """Standard deviation of the ...""",
+        order = 4)
+
+    normalise = basic.Bool(
+        label = "normalise by in-strength",
+        default = True,
+        doc = """Normalise the node coupling by the node's in-strenght""",
+        order = 4)
+
+
+    def __call__(self, g_ij, x_i, x_j):
+        r"""
+        Evaluate the Sigmoidal function for the arg ``x``. The equation being
+        evaluated has the following form:
+
+            .. math::
+                        a * (1 + tanh((x - midpoint)/sigma))
+
+        """
+        temp =  self.a * (1 +  numpy.tanh((x_j - self.midpoint) / self.sigma))
+
+        if self.normalise: # yeeeeahhh, let's make simulations slower ...
+            #NOTE: normalising by the strength or degrees may yield NaNs, so fill these values with inf
+            in_strength = g_ij.sum(axis=2)[:, :, numpy.newaxis, :]
+            in_strength[in_strength==0] = numpy.inf
+            temp *= (g_ij / in_strength) #region mode normalisation
+            
+            coupled_input = temp.mean(axis=0)
+        else: 
+            coupled_input = (g_ij*temp).mean(axis=0)
+        
+        return coupled_input
 
 
 
@@ -327,9 +387,9 @@ class Sigmoidal(Coupling):
 
 
         """
-        input = (g_ij * x_j).sum(axis=0)
+        coupled_input = (g_ij * x_j).sum(axis=0)
         sig = self.cmin + ((self.cmax - self.cmin) / (1.0 +
-            numpy.exp(-self.pi_on_sqrt3 * ((input - self.midpoint) / self.sigma))))
+              numpy.exp(-self.pi_on_sqrt3 * ((coupled_input - self.midpoint) / self.sigma))))
         return sig
 
     device_info = coupling_device_info(
@@ -351,6 +411,86 @@ class Sigmoidal(Coupling):
         """
         )
 
+
+class StaticSigmoidal(Coupling):
+    """
+    Static Sigmoidal Coupling function (static threshold) pre-product.
+
+    .. automethod:: StaticSigmoidal.__init__
+    .. automethod:: StaticSigmoidal.__call__
+
+    """
+    #NOTE: Different from Sigmoidal coupling where the product is an input of the sigmoid.
+    #      Here the sigmoid is an input of the product.
+
+    H = arrays.FloatArray(
+        label = "H", 
+        default = numpy.array([0.5,]),
+        range = basic.Range(lo = -100.0, hi = 100.0, step = 1.0),
+        doc = """Global Factor""",
+        order = 1)
+
+    Q = arrays.FloatArray(
+        label = "Q", 
+        default = numpy.array([1.,]),
+        range = basic.Range(lo = -100.0, hi = 100.0, step = 1.0),
+        doc = """Average""",
+        order = 2)
+
+    G = arrays.FloatArray(
+        label = "G", 
+        default = numpy.array([60.,]),
+        range = basic.Range(lo = -1000.0, hi = 1000.0, step = 1.),
+        doc = """Gain""",
+        order = 3)
+
+    P = arrays.FloatArray(
+        label = "P",
+        default = numpy.array([1.,]),
+        range = basic.Range(lo = -100.0, hi = 100.0, step = 0.01),
+        doc = """Excitation on Inhibition ratio""",
+        order = 4)
+
+    theta = arrays.FloatArray(
+        label = ":math:`\\theta`",
+        default = numpy.array([1.,]),
+        range = basic.Range(lo = -100.0, hi = 100.0, step = 0.01),
+        doc = """Threshold""",
+        order = 5)
+
+
+    def __init__(self, **kwargs):
+        """Precompute a constant after the base __init__"""
+        super(StaticSigmoidal, self).__init__(**kwargs)
+
+
+    def __call__(self, g_ij, x_i, x_j):
+        """
+        Evaluate the StaticSigmoidal function for the arg ``x``. The equation being
+        evaluated has the following form:
+        .. math:: H * (Q + \tanh(G * (P*x - \theta)))
+        
+        """
+        A_j = self.H * (self.Q + numpy.tanh(self.G * (self.P * x_j[:,0,:,:] - self.theta)[:,numpy.newaxis,:,:]))
+        return numpy.array([ (g_ij * A_j).sum(axis=0) ])
+
+    device_info = coupling_device_info(
+        pars = ['H', 'Q', 'G', 'P', 'theta'],
+        kernel = """
+        // load parameters
+        float H     = P(0)
+            , Q     = P(1)
+            , G     = P(2)
+            , P     = P(3)
+            , theta = P(4);
+
+        I = 0.0;
+        for (int j_node=0; j_node<n_node; j_node++, idel++, conn++)
+            I += H * (Q + tanh(G * (P * XJ[0] - theta)));
+
+        I = GIJ * I;
+        """
+        )
 
 
 class Difference(Coupling):

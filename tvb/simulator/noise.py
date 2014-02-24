@@ -24,7 +24,7 @@
 #   Paula Sanz Leon, Stuart A. Knock, M. Marmaduke Woodman, Lia Domide,
 #   Jochen Mersmann, Anthony R. McIntosh, Viktor Jirsa (2013)
 #       The Virtual Brain: a simulator of primate brain network dynamics.
-#   Frontiers in Neuroinformatics (in press)
+#   Frontiers in Neuroinformatics (7:10. doi: 10.3389/fninf.2013.00010)
 #
 #
 
@@ -45,6 +45,7 @@ RandomState.
 
 # Third party python libraries
 import numpy
+import scipy.stats as scipy_stats
 
 #The Virtual Brain
 from tvb.simulator.common import get_logger
@@ -162,6 +163,7 @@ class noise_device_info(object):
     def __set__(self, inst, val):
         raise AttributeError
 
+
 class Noise(core.Type):
     """
     Defines a base class for noise. Specific noises are derived from this class
@@ -193,7 +195,7 @@ class Noise(core.Type):
     .. automethod:: Noise.coloured
 
     """
-    _base_classes = ['Noise']
+    _base_classes = ['Noise', 'MultiplicativeSimple']
 
     #NOTE: nsig is not declared here because we use this class directly as the 
     #      inital conditions noise source, and in that use the job of nsig is 
@@ -308,17 +310,21 @@ class Noise(core.Type):
         self._dt_sqrt_lambda = self.dt * numpy.sqrt(1.0 / self.ntau)
 
     #TODO: Check performance, if issue, inline coloured and white...
-    def generate(self, shape):
+    def generate(self, shape, truncate=False, lo=-1.0, hi=1.0,):
         """Generate and return some "noise" of the requested ``shape``."""
         if self.ntau > 0.0:
             noise = self.coloured(shape)
         else:
-            noise = self.white(shape)
+            if truncate:
+                noise =  self.truncated_white(shape, lo, hi)
+            else: 
+                noise = self.white(shape)
         return noise
 
 
     def coloured(self, shape):
         """See, [FoxVemuri_1988]_"""
+
         self._h = self._sqrt_1_E2 * self.random_stream.normal(size=shape)
         self._eta =  self._eta * self._E + self._h
         return self._dt_sqrt_lambda * self._eta
@@ -330,8 +336,25 @@ class Noise(core.Type):
         amplitude scaled by :math:`\\sqrt{dt}`.
 
         """
+
         noise = numpy.sqrt(self.dt) * self.random_stream.normal(size=shape)
         return noise
+
+    def truncated_white(self,  shape, lo, hi):
+        """
+
+        Return truncated Gaussian random variates in the range ``[lo, hi]``, as an
+        array of shape ``shape``, with the amplitude scaled by
+        :math:`\\sqrt{dt}`.
+
+        See:
+        http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.stats.truncnorm.html
+
+        """
+
+        noise = numpy.sqrt(self.dt) * scipy_stats.truncnorm.rvs(lo, hi, size=shape)
+        return noise
+
 
 
 class Additive(Noise):
@@ -421,7 +444,7 @@ class Multiplicative(Noise):
         Sensible values are typically ~<< 1% of the dynamic range of a Model's
         state variables.""")
 
-    b = equations.Equation(
+    b = equations.TemporalApplicableEquation(
         label = ":math:`b`",
         default = equations.Linear(parameters = {"a": 1.0, "b": 0.0}),
         doc = """A function evaluated on the state-variables, the result of
@@ -453,6 +476,7 @@ class Multiplicative(Noise):
         g_x = numpy.sqrt(2.0 * self.nsig) * self.b.pattern  
 
         return g_x
+
 
 class MultiplicativeSimple(Multiplicative):
     """
