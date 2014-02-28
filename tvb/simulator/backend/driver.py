@@ -248,7 +248,7 @@ class Handler(object):
         for const in ['horizon', 'n_node', 'n_thr' , 'n_rthr', 'n_svar',
                 'n_cvar', 'n_cfpr', 'n_mmpr', 'n_nspr', 'n_inpr', 'n_tavg',
                 'n_msik', 'n_mode']:
-            setattr(self, const, Global(const, int32, self.code))
+            setattr(Handler, const, Global(const, int32, self.code))
 
     ##########################################################
     # simulation workspace arrays, also an ORDERED list of the arguments

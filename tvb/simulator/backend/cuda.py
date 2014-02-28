@@ -174,14 +174,14 @@ class Global(driver.Global):
 
     def __get__(self, inst, ownr):
         self.post_init()
-        buff = array([0]).astype(self.dtype)
+        buff = numpy.array([0]).astype(self.dtype)
         cuda.memcpy_dtoh(buff, self.ptr)
         return buff[0]
 
     def __set__(self, inst, val):
         self.post_init()
         cuda.memcpy_htod(self.ptr, self.dtype(val))
-        buff = empty((1,)).astype(self.dtype)
+        buff = numpy.empty((1,)).astype(self.dtype)
         cuda.memcpy_dtoh(buff, self.ptr)
 
  
