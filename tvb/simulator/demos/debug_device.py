@@ -81,18 +81,23 @@ from tvb.simulator import lab
 from tvb.simulator.backend import cee, cuda, driver
 map(reload, [driver, cee, cuda])
 
+mon = ( lab.monitors.Raw(),lab.monitors.TemporalAverage(period=5.0) )
+
 sim = lab.simulator.Simulator(
     model = lab.models.Generic2dOscillator(),
     connectivity = lab.connectivity.Connectivity(speed=300.0),
-    #coupling = lab.coupling.Linear(a=1e-2),
-    coupling = lab.coupling.Linear(),
+    coupling = lab.coupling.Linear(a=1e-2),
+    #coupling = lab.coupling.Linear(),
     #integrator = lab.integrators.HeunStochastic(
+    #integrator = lab.integrators.EulerStochastic(
     #    dt=2**-5, 
     #    noise=lab.noise.Additive(nsig=ones((2, 1, 1))*1e-5)
     #),
     #integrator = lab.integrators.HeunDeterministic(),
     integrator = lab.integrators.EulerDeterministic(),
-    monitors = lab.monitors.Raw()
+    #monitors = lab.monitors.Raw()
+    #monitors = lab.monitors.TemporalAverage(period=5.0)
+    monitors = mon
 )
 
 sim.configure()
@@ -101,6 +106,7 @@ sim.configure()
 dh = cuda.Handler.init_like(sim)
 dh.n_thr = 64
 dh.n_rthr = dh.n_thr
+#dh.n_msik=5
 dh.fill_with(0, sim)
 for i in range(1, dh.n_thr):
     dh.fill_with(i, sim)
@@ -108,10 +114,11 @@ for i in range(1, dh.n_thr):
 print 'required mem ', dh.nbytes/2**30.
 
 # run both with raw monitoring, compare output
-simgen = sim(simulation_length=100)
+simgen = sim(simulation_length=50)
 cont = True
 
 ys1,ys2, ys3 = [], [], []
+tavg1, tavg2 = [], []
 et1, et2 = 0.0, 0.0
 while cont:
 
@@ -124,8 +131,11 @@ while cont:
         #print 'hist[idx]', histval
 
         tic = lab.time()
-        t1, y1 = next(simgen)[0]
+        res = next(simgen)
+        t1, y1 = res[0]
         ys1.append(y1)
+        if res[1] is not None:
+            tavg1.append(res[1][1])
         et1 += lab.time() - tic
     except StopIteration:
         break
@@ -148,6 +158,9 @@ while cont:
     
     t2 = dh.i_step*dh.inpr.value[0]
     _y2 = dh.x.value.reshape((dh.n_node, -1, dh.n_mode)).transpose((1, 0, 2))
+    if res[1] is not None:
+        _tavg2 = dh.tavg.value.reshape((dh.n_node, -1, dh.n_mode)).transpose((1, 0, 2))
+        tavg2.append(_tavg2[0])
     #ys3.append(_y2)
 
     # in this case where our simulations are all identical, the easiest
@@ -163,6 +176,8 @@ while cont:
 
 ys1 = array(ys1)
 ys2 = array(ys2)
+tavg1 = array(tavg1)
+tavg2 = array(tavg2)
 #ys3 = array(ys3)
 #print ys3.shape, ys3.nbytes/2**30.0
 
@@ -177,9 +192,12 @@ from matplotlib import pyplot as pl
 
 pl.figure(2)
 pl.clf()
-pl.subplot(311), pl.imshow(ys1[:, 0, :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
-pl.subplot(312), pl.imshow(ys2[:,    :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
-pl.subplot(313), pl.imshow(100*((ys1[:, 0] - ys2)/ys1.ptp())[..., 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
+pl.subplot(321), pl.imshow(ys1[:, 0, :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
+pl.subplot(323), pl.imshow(ys2[:,    :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
+pl.subplot(325), pl.imshow(100*((ys1[:, 0] - ys2)/ys1.ptp())[..., 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
 
+pl.subplot(322), pl.imshow(tavg1[:, 0, :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
+pl.subplot(324), pl.imshow(tavg2[:,    :, 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
+pl.subplot(326), pl.imshow(100*((tavg1[:, 0] - tavg2)/tavg1.ptp())[..., 0].T, aspect='auto', interpolation='nearest'), pl.colorbar()
 #pl.show()
-pl.savefig('debug.png')
+pl.savefig('debug.png', dpi=300)

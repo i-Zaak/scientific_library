@@ -157,7 +157,7 @@ class Code(driver.Code):
     def __init__(self, *args, **kwds):
         super(Code, self).__init__(*args, **kwds)
         self.mod = CUDASourceModule("#define TVBGPU\n" + self.source, 
-                                    options=["--ptxas-options=-v"], keep=True,
+                                    options=["--ptxas-options=-v -lineinfo"], keep=True,
                                     cache_dir=False)
 
 class Global(driver.Global):
