@@ -145,6 +145,7 @@ _, total_mem = cuda.mem_get_info()
 print 'GPU memory ', total_mem/2**30.
 from pycuda.curandom import XORWOWRandomNumberGenerator as XWRNG
 rng = XWRNG(pycuda.curandom.seed_getter_unique, 2000)
+generator = XWRNG();
 
 # FIXME should be on the noise objects, but has different interface
 # FIXME this is additive white noise
@@ -156,9 +157,9 @@ def gen_noise_into(devary, dt):
 class Code(driver.Code):
     def __init__(self, *args, **kwds):
         super(Code, self).__init__(*args, **kwds)
-        self.mod = CUDASourceModule("#define TVBGPU\n" + self.source, 
+        self.mod = CUDASourceModule("#include <curand_kernel.h>\nextern \"C\"{\n#define TVBGPU\n" + self.source + "}\n", 
                                     options=["--ptxas-options=-v -lineinfo"], keep=True,
-                                    cache_dir=False)
+                                    cache_dir=False,no_extern_c=True)
 
 class Global(driver.Global):
     """
@@ -244,6 +245,7 @@ class Handler(driver.Handler):
         args = [self.i_step_type(self.i_step)]
         for k in self.device_state:
             args.append(getattr(self, k).device)
+        args.append(generator.state)
         kwds = extra or self.extra_args
         #try:
         self._device_update(*args, **kwds)

@@ -89,16 +89,18 @@ sim = lab.simulator.Simulator(
     coupling = lab.coupling.Linear(a=1e-2),
     #coupling = lab.coupling.Linear(),
     #integrator = lab.integrators.HeunStochastic(
-    #integrator = lab.integrators.EulerStochastic(
-    #    dt=2**-5, 
-    #    noise=lab.noise.Additive(nsig=ones((2, 1, 1))*1e-5)
-    #),
+    integrator = lab.integrators.EulerStochastic(
+        dt=2**-5, 
+        noise=lab.noise.Additive(nsig=ones((2, 1, 1))*1e-5)
+    ),
     #integrator = lab.integrators.HeunDeterministic(),
-    integrator = lab.integrators.EulerDeterministic(),
+    #integrator = lab.integrators.EulerDeterministic(),
     #monitors = lab.monitors.Raw()
     #monitors = lab.monitors.TemporalAverage(period=5.0)
     monitors = mon
 )
+
+MSIK = 1
 
 sim.configure()
 
@@ -106,7 +108,7 @@ sim.configure()
 dh = cuda.Handler.init_like(sim)
 dh.n_thr = 64
 dh.n_rthr = dh.n_thr
-#dh.n_msik=5
+dh.n_msik = MSIK
 dh.fill_with(0, sim)
 for i in range(1, dh.n_thr):
     dh.fill_with(i, sim)
@@ -120,6 +122,7 @@ cont = True
 ys1,ys2, ys3 = [], [], []
 tavg1, tavg2 = [], []
 et1, et2 = 0.0, 0.0
+st = 0
 while cont:
 
     # simulator output
@@ -147,9 +150,10 @@ while cont:
 
     tic = lab.time()
     # dh output
-    cuda.gen_noise_into(dh.ns, dh.inpr.value[0])
-    dh()
-
+    if st % MSIK == 0:
+        cuda.gen_noise_into(dh.ns, dh.inpr.value[0])
+        dh()
+    st += 1
     #print 'I sim', sim.coupling.ret[0, 10:15, 0]
 
     # compare dx

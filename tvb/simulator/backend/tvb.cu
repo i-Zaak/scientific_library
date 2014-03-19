@@ -140,6 +140,26 @@ $noise_gfun
 
 
 #ifdef TVBGPU
+__device__
+#endif
+void generate_noise(curandState *global_state, float *ns)
+{
+#define NS(i)   ns   [n_thr*i]
+	int i_thr = blockDim.x*blockIdx.x + threadIdx.x;
+	if (i_thr < n_thr){ 
+		curandState local_state = global_state[i_thr];
+		for (int i_svar=0; i_svar<n_svar; i_svar++){
+			NS(i_svar) = curand_normal(&local_state);
+			global_state[i_thr] = local_state;
+		}
+	}
+
+#undef NS
+}
+
+
+
+#ifdef TVBGPU
 __device__ 
 #endif
 void integrate(
@@ -257,7 +277,10 @@ void update(
     float *gx,                  // .shape == (               , n_svar, n_thr) 
     float *ns,                  // .shape == (        n_nodes, n_svar, n_thr) 
     float *stim,                // .shape == (        n_nodes, n_svar, n_thr)
-    float *tavg                 // .shape == (        n_nodes, n_svar, n_thr)
+    float *tavg,                // .shape == (        n_nodes, n_svar, n_thr)
+
+	// noise generators
+	curandState *global_state
     )
 
 {
@@ -293,10 +316,12 @@ void update(
         , *stim_  = stim  + i_thr 
         , *tavg_  = tavg  + i_thr;
 
+    curandState local_state;
+
     // per node pointers
     float *_x,  *_hist,  *_ns, *_stim,  *_nspr,  *_mmpr, *_conn;
     int *_idel; 
-float *_tavg;
+	float *_tavg;
     // multistep in-kernel
     for (int i_msik=0; i_msik<n_msik; i_msik++, i_step++)
     {
@@ -307,12 +332,14 @@ float *_tavg;
 
 		_tavg = tavg_;
 
+		generate_noise(global_state,_ns);
+
         for (int i_node=0; i_node<n_node; i_node++)
         {   // C77, cousin of F77
             coupling(input_, _x, _idel, _conn, hist_, cfpr, cvars, i_step, i_node);
             integrate(_x, dx1_, dx2_, gx_, _ns, inpr, _nspr, _mmpr, input, _stim);
 			
-			//temporal averaging
+			//temporal averaging -- could be replaced by generic monitor accumulators
 			#define ALL for (int i=0; i<n_svar; i++) 
 	        if (n_tavg>0)
 	        {
