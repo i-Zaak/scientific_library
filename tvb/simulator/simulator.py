@@ -486,7 +486,7 @@ class Simulator(core.Type):
                 stimulus[self.model.cvar, :, :] = numpy.reshape(self.stimulus(step - (self.current_step+1)), (1, -1, 1))
                 #import pdb; pdb.set_trace()
 
-            #import pdb; pdb.set_trace()
+            import pdb; pdb.set_trace()
             state = scheme(state, dfun, node_coupling, local_coupling, stimulus)
             history[step % horizon, :] = state
 

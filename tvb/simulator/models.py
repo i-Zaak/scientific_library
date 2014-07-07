@@ -983,7 +983,7 @@ class ReducedSetFitzHughNagumo(Model):
         dbeta = (alpha - self.b * beta + self.n_i) / self.tau
 
         derivative = numpy.array([dxi, deta, dalpha, dbeta])
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return derivative
 
 

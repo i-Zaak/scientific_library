@@ -141,7 +141,6 @@ $noise_gfun
 
 #ifdef TVBGPU
 __device__
-#endif
 void generate_noise(curandState *global_state, float *ns)
 {
 #define NS(i)   ns   [n_thr*i]
@@ -156,6 +155,7 @@ void generate_noise(curandState *global_state, float *ns)
 
 #undef NS
 }
+#endif
 
 
 
@@ -277,10 +277,12 @@ void update(
     float *gx,                  // .shape == (               , n_svar, n_thr) 
     float *ns,                  // .shape == (        n_nodes, n_svar, n_thr) 
     float *stim,                // .shape == (        n_nodes, n_svar, n_thr)
-    float *tavg,                // .shape == (        n_nodes, n_svar, n_thr)
+    float *tavg                // .shape == (        n_nodes, n_svar, n_thr)
 
 	// noise generators
-	curandState *global_state
+#ifdef TVBGPU
+	,curandState *global_state
+#endif
     )
 
 {

@@ -74,7 +74,7 @@ def dll(src, libname, compiler=None, debug=False):
     with file as fd:
         fd.write(src)
         fd.flush()
-        arg.append('-g' if debug else '-O3')
+        args.append('-g' if debug else '-O3')
         ret = subprocess.call(args + [fd.name, '-o', libname])
 
     return ret
@@ -115,7 +115,7 @@ class srcmod(object):
 class Code(driver.Code):
     def __init__(self, *args, **kwds):
         super(Code, self).__init__(*args, **kwds)
-        self.mod = srcmod("#include <math.h>\n" + self.source, self.fns)
+        self.mod = srcmod("#include <math.h>\n" + self.source, self.fns, debug=True)
 
 
 class Global(driver.Global):

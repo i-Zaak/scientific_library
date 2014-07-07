@@ -175,6 +175,7 @@ class Global(driver.Global):
 
     def __get__(self, inst, ownr):
         self.post_init()
+        print "!!!!!          getting %s" % self.name 
         buff = numpy.array([0]).astype(self.dtype)
         cuda.memcpy_dtoh(buff, self.ptr)
         return buff[0]
@@ -232,10 +233,10 @@ class Handler(driver.Handler):
             return exc
     @property
     def extra_args(self):
-        bs = int(self.n_thr)%1024
-        gs = int(self.n_thr)/1024
+        bs = int(self.n_thr)%64
+        gs = int(self.n_thr)/64
         if bs == 0:
-            bs = 1024
+            bs = 64
         if gs == 0:
             gs = 1
         return {'block': (bs, 1, 1),

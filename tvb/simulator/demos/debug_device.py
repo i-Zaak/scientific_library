@@ -100,13 +100,13 @@ sim = lab.simulator.Simulator(
     monitors = mon
 )
 
-MSIK = 1
+MSIK = 5
 
 sim.configure()
 
 # then build device handler and pack it iwht simulation
 dh = cuda.Handler.init_like(sim)
-dh.n_thr = 64
+dh.n_thr = 512
 dh.n_rthr = dh.n_thr
 dh.n_msik = MSIK
 dh.fill_with(0, sim)
@@ -116,13 +116,17 @@ for i in range(1, dh.n_thr):
 print 'required mem ', dh.nbytes/2**30.
 
 # run both with raw monitoring, compare output
-simgen = sim(simulation_length=50)
+simgen = sim(simulation_length=100)
 cont = True
 
 ys1,ys2, ys3 = [], [], []
 tavg1, tavg2 = [], []
 et1, et2 = 0.0, 0.0
 st = 0
+
+n_node = dh.n_node
+n_mode = dh.n_mode
+
 while cont:
 
     # simulator output
@@ -151,7 +155,7 @@ while cont:
     tic = lab.time()
     # dh output
     if st % MSIK == 0:
-        cuda.gen_noise_into(dh.ns, dh.inpr.value[0])
+        #cuda.gen_noise_into(dh.ns, dh.inpr.value[0])
         dh()
     st += 1
     #print 'I sim', sim.coupling.ret[0, 10:15, 0]
@@ -160,32 +164,33 @@ while cont:
     #print 'dx1 sim', sim.integrator.dX[:, -1, 0]
     #print 'dx1 dh ', dh.dx1.value.flat[:]
     
-    t2 = dh.i_step*dh.inpr.value[0]
-    _y2 = dh.x.value.reshape((dh.n_node, -1, dh.n_mode)).transpose((1, 0, 2))
+    #t2 = dh.i_step*dh.inpr.value[0]
+    #_y2 = dh.x.value.reshape((n_node, -1, n_mode)).transpose((1, 0, 2))
     if res[1] is not None:
-        _tavg2 = dh.tavg.value.reshape((dh.n_node, -1, dh.n_mode)).transpose((1, 0, 2))
+        _tavg2 = dh.tavg.value.reshape((n_node, -1, n_mode)).transpose((1, 0, 2))
         tavg2.append(_tavg2[0])
     #ys3.append(_y2)
 
     # in this case where our simulations are all identical, the easiest
     # comparison, esp. to check that all threads on device behave, is to
     # randomly sample one of the threads at each step (right?)
-    y2 = _y2[0]
-    ys2.append(y2)
+    #y2 = _y2[0]
+    #ys2.append(y2)
     et2 += lab.time() - tic
 
-    if dh.i_step % 100 == 0:
-        stmt = "%4.2f\t%4.2f\t%.3f"
-        print stmt % (t1, t2, ((y1 - y2)**2).sum()/y1.ptp())
+    #if dh.i_step % 100 == 0:
+    #    stmt = "%4.2f\t%4.2f\t%.3f"
+    #    print stmt % (t1, t2, ((y1 - y2)**2).sum()/y1.ptp())
 
 ys1 = array(ys1)
-ys2 = array(ys2)
+#ys2 = array(ys2)
 tavg1 = array(tavg1)
 tavg2 = array(tavg2)
 #ys3 = array(ys3)
 #print ys3.shape, ys3.nbytes/2**30.0
 
-print et1, et2, et2*1./dh.n_thr
+#print "CPU: %f GPU: %f GPU per sim: %f speedup: %f" %(et1, et2, et2*1./dh.n_thr, et1/et2*dh.n_thr)
+print "CPU: %f GPU: %f GPU per sim: %f speedup: %f" %(et1, et2, et2*1./dh.n_thr, et1/et2*dh.n_thr)
 #print ys1.flat[::450]
 #print ys2.flat[::450]
 savez('debug.npz', ys1=ys1, ys2=ys2)#, ys3=ys3)
