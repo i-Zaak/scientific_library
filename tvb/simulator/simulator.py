@@ -501,7 +501,6 @@ class Simulator(core.Type):
             if self.stimulus is not None:
                 stimulus[self.model.cvar, :, :] = numpy.reshape(self.stimulus(step - (self.current_step + 1)),
                                                                 (1, -1, 1))
-            #import pdb; pdb.set_trace()
             #local_coupling = local_weights * state[self.model.lcvar]
             
             state = scheme(state, dfun, node_coupling, local_coupling, stimulus)
@@ -783,7 +782,6 @@ class Simulator(core.Type):
             LOG.error("This is gonna get ugly...")
 
         self._memory_requirement_census = magic_number * memreq
-        #import pdb; pdb.set_trace()
         msg = "Memory requirement census: simulation will need about %.1f MB"
         LOG.info(msg % (self._memory_requirement_census / 1048576.0))
 
