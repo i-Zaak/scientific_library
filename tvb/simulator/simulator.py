@@ -262,9 +262,6 @@ class Simulator(core.Type):
         """
         Configure just the basic fields, so that memory can be estimated
         """
-        if self.conduction_speed not in (0.0, 3.0, None):
-            LOG.warning("Setting connectivity.speed with conduction_speed provided to simulator.")
-            self.connectivity.speed = numpy.array([self.conduction_speed])
         self.connectivity.configure()
 
         if self.surface:
@@ -297,22 +294,6 @@ class Simulator(core.Type):
             #    msg = "%s: Surface needs region mapping defined... "
             #    LOG.error(msg % (repr(self)))
 
-        #Make sure spatialised model parameters have the right shape (number_of_nodes, 1)
-        excluded_checks = ("state_variable_range", "variables_of_interest", "noise", "psi_table", "nerf_table")
-        params = self.model.trait.keys()
-        for param in excluded_checks:
-            if param in params:
-                params.remove(param)
-        for param in params:
-            #If it's a surface sim and model parameters were provided at the region level
-            if self.surface is not None:
-            #TODO: Once traits are working properly again, the evals and execs here shouldn't be necessary...
-                if eval("self.model." + param + ".size") == self.connectivity.number_of_regions:
-                    exec("self.model." + param + " = self.model." + param +
-                         "[self.surface.region_mapping].reshape((-1, 1))")
-            if eval("self.model." + param + ".size") == self.number_of_nodes:
-                exec("self.model." + param + " = self.model." + param + ".reshape((-1, 1))")
-
         # Estimate of memory usage
         self._guesstimate_memory_requirement()
 
@@ -332,6 +313,23 @@ class Simulator(core.Type):
         if full_configure:
             # When run from GUI, preconfigure is run separately, and we want to avoid running that part twice
             self.preconfigure()
+
+        #Make sure spatialised model parameters have the right shape (number_of_nodes, 1)
+        excluded_params = ("state_variable_range", "variables_of_interest", "noise", "psi_table", "nerf_table")
+
+        for param in self.model.trait.keys():
+            if param in excluded_params:
+                continue
+            #If it's a surface sim and model parameters were provided at the region level
+            region_parameters = getattr(self.model, param)
+            if self.surface is not None:
+                if region_parameters.size == self.connectivity.number_of_regions:
+                    new_parameters = region_parameters[self.surface.region_mapping].reshape((-1, 1))
+                    setattr(self.model, param, new_parameters)
+            region_parameters = getattr(self.model, param)
+            if region_parameters.size == self.number_of_nodes:
+                new_parameters = region_parameters.reshape((-1, 1))
+                setattr(self.model, param, new_parameters)
 
         #Configure spatial component of any stimuli
         self.configure_stimuli()
@@ -437,7 +435,7 @@ class Simulator(core.Type):
         #Create node index array of shape ...
         node_ids = numpy.tile(numpy.arange(number_of_regions)[:, numpy.newaxis],
                               (1, number_of_regions)).reshape(nsn)
-        node_ids = numpy.tile(node_ids, (1, ncvar, 1))
+        node_ids = numpy.tile(node_ids, (1, ncvar, 1)).T
         LOG.debug("%s: node_ids shape is: %s"%(str(self), str(node_ids.shape)))
 
         if self.surface is None:
@@ -461,7 +459,7 @@ class Simulator(core.Type):
 
         if self.stimulus is None:
             stimulus = 0.0
-        else:  # TODO: Consider changing to absolute time...
+        else:  # TODO: Consider changing to simulator absolute time... This is an open discussion, a matter of interpretation of the stimuli time axis.
             time = numpy.arange(0, simulation_length, self.integrator.dt)
             time = time[numpy.newaxis, :]
             self.stimulus.configure_time(time)
@@ -501,8 +499,7 @@ class Simulator(core.Type):
             if self.stimulus is not None:
                 stimulus[self.model.cvar, :, :] = numpy.reshape(self.stimulus(step - (self.current_step + 1)),
                                                                 (1, -1, 1))
-            #local_coupling = local_weights * state[self.model.lcvar]
-            
+
             state = scheme(state, dfun, node_coupling, local_coupling, stimulus)
             history[step % horizon, :] = state
 
@@ -519,10 +516,8 @@ class Simulator(core.Type):
             if any(outputi is not None for outputi in output):
                 yield output
 
-            #TODO: Need to be able to pause and resume a running simulation.
-
-        #Update to support continuation
-        self.current_step = self.current_step + int_steps - 1  # TODO: Don't think this -1 should be here, check...
+        # This -1 is here for not repeating the point on resume
+        self.current_step = self.current_step + int_steps - 1
         self.history = history
 
 

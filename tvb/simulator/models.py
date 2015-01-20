@@ -204,6 +204,7 @@ class Model(core.Type):
         # TODO: There is an issue of allignment when the current implementation
         #      is used to pad out explicit inital conditions that aren't as long
         #      as the required history...
+        #      This issue is old and possible fixed
         # TODO: We still ideally want to support spatial colour for surfaces --
         #      though this will probably have to be done at the Simulator level
         #      with a linear, strictly-stable, spatially invariant filter
@@ -212,9 +213,11 @@ class Model(core.Type):
         #      temporally coloured noise hasn't un-whitened the spatial noise
         #      distribution to start with... [ie, spatial colour is a longer
         #      term problem to solve...])
+        #      This is a scientific open question.
         #TODO: Ideally we'd like to have a independent random stream for each node.
         #      Currently, if the number of nodes is different we'll get the
         #      slightly different values further in the history array.
+        #      This is a scientific open question.
 
         initial_conditions = numpy.zeros(history_shape)
         tpts = history_shape[0]
@@ -242,7 +245,7 @@ class Model(core.Type):
                                                          lo=lo_bound, hi=up_bound)
 
         for var in xrange(nvar):
-            # TODO: Hackery, validate me...-noise.mean(axis=0) ... self.noise.nsig
+            # TODO: Hackery (because unpublished method), validate me...-noise.mean(axis=0) ... self.noise.nsig.
             # perf hint: cumsum is expensive
             initial_conditions[:, var, :] = numpy.sqrt(2.0 * nsig[var]) * numpy.cumsum(noise[:, var, :],axis=0) + loc[var]
 
@@ -1022,6 +1025,7 @@ class ReducedSetFitzHughNagumo(Model):
 
         # TODO: Hack fix, these cause issues with mapping spatialised parameters
         #      at the region level to the surface for surface sims.
+        #      Setting per region parameters with a surface simulation will break this model.
         # NOTE: Existing modes definition (from the paper) is not properly
         #      normalised, so number_of_modes can't really be changed
         #      meaningfully anyway adnd nu and nv just need to be "large enough"
@@ -1490,6 +1494,7 @@ class ReducedSetHindmarshRose(Model):
 
         # TODO: Hack fix, these cause issues with mapping spatialised parameters
         #      at the region level to the surface for surface sims.
+        #      Setting per region parameters with a surface simulation will break this model.
         # NOTE: Existing modes definition (from the paper) is not properly
         #      normalised, so number_of_modes can't really be changed
         #      meaningfully anyway adnd nu and nv just need to be "large enough"
@@ -2891,25 +2896,15 @@ class Generic2dOscillator(Model):
 
 
 
-
-        #if not hasattr(self, 'derivative'):
-        #    self.derivative = numpy.empty((2,)+V.shape)
-
-        ## numexpr pre-allocate
         # Pre-allocate the result array then instruct numexpr to use it as output.
         # This avoids an expensive array concatenation
-        deriv = numpy.empty_like(state_variables)
+        derivative = numpy.empty_like(state_variables)
 
-        ev('d * tau * (alpha * W - f * V**3 + e * V**2 + g * V + gamma * I + gamma *c_0 + l_0)', out=deriv[0])
-        ev('d * (a + b * V + c * V**2 - beta * W) / tau', out=deriv[1])
+        ev('d * tau * (alpha * W - f * V**3 + e * V**2 + g * V + gamma * I + gamma *c_0 + lc_0)', out=derivative[0])
+        ev('d * (a + b * V + c * V**2 - beta * W) / tau', out=derivative[1])
 
-        ## regular ndarray operation
-        ##dV = tau * (W - 0.5* V**3.0 + 3.0 * V**2 + I + c_0 + lc_0)
-        ##dW = d * (a + b * V + c * V**2 - W) / tau
 
-        self.derivative = deriv  #why ?
-
-        return self.derivative
+        return derivative
 
     device_info = model_device_info(
         pars=['tau', 'a', 'b', 'c', 'd', 'I'],
@@ -3118,7 +3113,7 @@ class LarterBreakspear(Model):
                                   'TNa', 'VCa', 'VK', 'VL', 'VNa', 'd_K', 'tau_K',
                                   'd_Na', 'd_Ca', 'aei', 'aie', 'b', 'C', 'ane',
                                   'ani', 'aee', 'Iext', 'rNMDA', 'VT', 'd_V', 'ZT',
-                                  'd_Z', 'QV_max', 'QZ_max']
+                                  'd_Z', 'QV_max', 'QZ_max', 't_scale']
 
     #Define traited attributes for this model, these represent possible kwargs.
     gCa = arrays.FloatArray(
@@ -3238,10 +3233,10 @@ class LarterBreakspear(Model):
     C = arrays.FloatArray(
         label = ":math:`C`",
         default = numpy.array([0.1]),
-        range = basic.Range(lo = 0.0, hi = 0.2, step = 0.01),
+        range = basic.Range(lo = 0.0, hi = 1.0, step = 0.01),
         doc = """Strength of excitatory coupling. Balance between internal and
         local (and global) coupling strength. C > 0 introduces interdependences between
-        consecutive columns/nodes. C=1 corresponds to maximum coupling.
+        consecutive columns/nodes. C=1 corresponds to maximum coupling between node and no self-coupling.
         This strenght should be set to sensible values when a whole network is connected. """)
 
     ane = arrays.FloatArray(
@@ -3280,7 +3275,7 @@ class LarterBreakspear(Model):
         default = numpy.array([0.0]),
         range = basic.Range(lo = 0.0, hi = 0.7, step = 0.01),
         doc = """Threshold potential (mean) for excitatory neurons.
-        In [Breaksetal_2003_b]_ this values is 0.""")
+        In [Breaksetal_2003_b]_ this value is 0.""")
 
     d_V = arrays.FloatArray(
         label = r":math:`\delta_{V}`",
@@ -3313,6 +3308,13 @@ class LarterBreakspear(Model):
         default = numpy.array([1.0]),
         range = basic.Range(lo = 0.1, hi = 1., step = 0.001),
         doc = """Maximal firing rate for excitatory populations (kHz)""")
+
+
+    t_scale = arrays.FloatArray(
+        label = ":math:`t_{scale}`",
+        default = numpy.array([1.0]),
+        range = basic.Range(lo = 0.1, hi = 1., step = 0.001),
+        doc = """Time scale factor""")
 
 
     variables_of_interest = basic.Enumerate(
@@ -3393,16 +3395,16 @@ class LarterBreakspear(Model):
         lc_0  = local_coupling[0,:] * QV
 
 
-        derivative[0] = (- (self.gCa + (1.0 - self.C) * (self.rNMDA * self.aee) * (QV + lc_0)+ self.C * self.rNMDA * self.aee * c_0) * m_Ca * (V - self.VCa)
+        derivative[0] = self.t_scale * (- (self.gCa + (1.0 - self.C) * (self.rNMDA * self.aee) * (QV + lc_0)+ self.C * self.rNMDA * self.aee * c_0) * m_Ca * (V - self.VCa)
                          - self.gK * W * (V - self.VK)
                          - self.gL * (V - self.VL)
                          - (self.gNa * m_Na + (1.0 - self.C) * self.aee * (QV  + lc_0) + self.C * self.aee * c_0) * (V - self.VNa)
                          - self.aie * Z * QZ
                          + self.ane * self.Iext)
 
-        derivative[1] = self.phi * (m_K - W) / self.tau_K
+        derivative[1] = self.t_scale * self.phi * (m_K - W) / self.tau_K
 
-        derivative[2] = self.b * (self.ani * self.Iext + self.aei * V * QV)
+        derivative[2] = self.t_scale * self.b * (self.ani * self.Iext + self.aei * V * QV)
 
         return derivative
 
@@ -3433,61 +3435,62 @@ class ReducedWongWang(Model):
 
     """
     _ui_name = "Reduced Wong-Wang"
+    ui_configurable_parameters = ['a', 'b', 'd', 'gamma', 'tau_s', 'w', 'J_N', 'I_o']
 
     #Define traited attributes for this model, these represent possible kwargs.
     a = arrays.FloatArray(
         label=":math:`a`",
         default=numpy.array([0.270, ]),
-        range=basic.Range(lo=0.0, hi=0.270),
+        range=basic.Range(lo=0.0, hi=0.270, step=0.01),
         doc=""" [nC]^{-1}. Parameter chosen to fit numerical solutions.""",
         order=1)
 
     b = arrays.FloatArray(
         label=":math:`b`",
         default=numpy.array([0.108, ]),
-        range=basic.Range(lo=0.0, hi=1.0),
+        range=basic.Range(lo=0.0, hi=1.0, step=0.01),
         doc="""[kHz]. Parameter chosen to fit numerical solutions.""",
         order=2)
 
     d = arrays.FloatArray(
         label=":math:`d`",
         default=numpy.array([154., ]),
-        range=basic.Range(lo=0.0, hi=200.0),
+        range=basic.Range(lo=0.0, hi=200.0, step=0.01),
         doc="""[ms]. Parameter chosen to fit numerical solutions.""",
         order=3)
 
     gamma = arrays.FloatArray(
         label=r":math:`\gamma`",
         default=numpy.array([0.641, ]),
-        range=basic.Range(lo=0.0, hi=1.0),
+        range=basic.Range(lo=0.0, hi=1.0, step=0.01),
         doc="""Kinetic parameter""",
         order=4)
 
     tau_s = arrays.FloatArray(
         label=r":math:`\tau_S`",
         default=numpy.array([100., ]),
-        range=basic.Range(lo=50.0, hi=150.0),
+        range=basic.Range(lo=50.0, hi=150.0, step=1.0),
         doc="""Kinetic parameter. NMDA decay time constant.""",
         order=5)
 
     w = arrays.FloatArray(
         label=r":math:`w`",
         default=numpy.array([0.6, ]),
-        range=basic.Range(lo=0.0, hi=1.0, step=0.1),
+        range=basic.Range(lo=0.0, hi=1.0, step=0.01),
         doc="""Excitatory recurrence""",
         order=6)
 
     J_N = arrays.FloatArray(
         label=r":math:`J_{N}`",
         default=numpy.array([0.2609, ]),
-        range=basic.Range(lo=0.2609, hi=0.5, step=0.01),
+        range=basic.Range(lo=0.2609, hi=0.5, step=0.001),
         doc="""Excitatory recurrence""",
         order=7)
 
     I_o = arrays.FloatArray(
         label=":math:`I_{o}`",
         default=numpy.array([0.33, ]),
-        range=basic.Range(lo=0.0, hi=1.0),
+        range=basic.Range(lo=0.0, hi=1.0, step=0.01),
         doc="""[nA] Effective external input""",
         order=8)
 
@@ -3848,7 +3851,7 @@ class Hopfield(Model):
         x = state_variables[0, :]
         dx = (- x + coupling[0]) / self.taux
 
-        # todo: display dependent hack
+        # todo: display dependent hack. It returns dx twice to be compatible with dfunDyn
         # We return 2 arrays here, because we have 2 possible state Variable, even if not dynamic
         # Otherwise the phase-plane display will fail.
         derivative = numpy.array([dx, dx])
@@ -4136,21 +4139,21 @@ class Epileptor(Model):
         c_pop2 = coupling[1, :]
 
         # population 1
-        if_ydot0 = y[1] - self.a*y[0]**3 + self.b*y[0]**2 - y[2] + Iext + self.Kvf*c_pop1
-        else_ydot0 = y[1] + (self.slope - y[3] + 0.6*(y[2]-4.0)**2)*y[0] - y[2] + Iext + self.Kvf*c_pop1
-        ydot[0] = where(y[0] < 0., if_ydot0, else_ydot0)
+        if_ydot0 = - self.a*y[0]**2 + self.b*y[0]
+        else_ydot0 = self.slope - y[3] + 0.6*(y[2]-4.0)**2
+        ydot[0] = y[1] - y[2] + Iext + self.Kvf*c_pop1 + where(y[0] < 0., if_ydot0, else_ydot0) * y[0]
         ydot[1] = self.c - self.d*y[0]**2 - y[1]
 
         # energy
-        if_ydot2 = self.r*(4*(y[0] - self.x0) - y[2] - 0.1*y[2]**7)
-        else_ydot2 = self.r*(4*(y[0] - self.x0) - y[2])
-        ydot[2] = where(y[2] < 0., if_ydot2, else_ydot2)
+        if_ydot2 = - 0.1*y[2]**7
+        else_ydot2 = 0
+        ydot[2] = self.r * ( 4*(y[0] - self.x0) - y[2] + where(y[2] < 0., if_ydot2, else_ydot2))
 
         # population 2
         ydot[3] = -y[4] + y[3] - y[3]**3 + self.Iext2 + 2*y[5] - 0.3*(y[2] - 3.5) + self.Kf*c_pop2
-        if_ydot4 = -y[4]/self.tau
-        else_ydot4 = (-y[4] + self.aa*(y[3] + 0.25))/self.tau
-        ydot[4] = where(y[3] < -0.25, if_ydot4, else_ydot4)
+        if_ydot4 = 0
+        else_ydot4 = self.aa*(y[3] + 0.25)
+        ydot[4] = (-y[4] + where(y[3] < -0.25, if_ydot4, else_ydot4))/self.tau
 
         # filter
         ydot[5] = -0.01*(y[5] - 0.1*y[0])
@@ -4397,24 +4400,24 @@ class EpileptorPermittivityCoupling(Model):
         c_pop2 = coupling[1, :]
 
         # population 1
-        if_ydot0 = self.tt*(y[1] - self.a*y[0]**3 + self.b*y[0]**2 - y[2] + Iext + self.Kvf*c_pop1)
-        else_ydot0 = self.tt*(y[1] + (self.slope - y[3] + 0.6*(y[2]-4.0)**2)*y[0] - y[2] + Iext + self.Kvf*c_pop1)
-        ydot[0] = where(y[0] < 0., if_ydot0, else_ydot0)
-        ydot[1] = self.tt*(self.c - self.d*y[0]**2 - y[1])
+        if_ydot0 = - self.a*y[0]**2 + self.b*y[0]
+        else_ydot0 = self.slope - y[3] + 0.6*(y[2]-4.0)**2
+        ydot[0] = y[1] - y[2] + Iext + self.Kvf*c_pop1 + where(y[0] < 0., if_ydot0, else_ydot0)*y[0]
+        ydot[1] = self.c - self.d*y[0]**2 - y[1]
 
         # energy
-        ydot[2] = self.tt*(self.r*(3./(1.+numpy.exp(-(y[0]+0.5)/0.2)) + self.x0 - y[2] - self.Ks*c_pop1))
+        ydot[2] = self.r*(3./(1.+numpy.exp(-(y[0]+0.5)/0.2)) + self.x0 - y[2] - self.Ks*c_pop1)
 
         # population 2
-        ydot[3] = self.tt*(-y[4] + y[3] - y[3]**3 + self.Iext2 + 2*y[5] - 0.3*(y[2] - 3.5) + self.Kf*c_pop2)
-        if_ydot4 = self.tt*(-y[4]/self.tau)
-        else_ydot4 = self.tt*((-y[4] + self.aa*(y[3] + 0.25))/self.tau)
-        ydot[4] = where(y[3] < -0.25, if_ydot4, else_ydot4)
+        ydot[3] = -y[4] + y[3] - y[3]**3 + self.Iext2 + 2*y[5] - 0.3*(y[2] - 3.5) + self.Kf*c_pop2
+        if_ydot4 = 0
+        else_ydot4 = self.aa*(y[3] + 0.25)
+        ydot[4] = (-y[4] + where(y[3] < -0.25, if_ydot4, else_ydot4))/self.tau
 
         # filter
-        ydot[5] = self.tt*(-0.01*(y[5] - 0.1*y[0]))
+        ydot[5] = -0.01*(y[5] - 0.1*y[0])
 
         # output time series
         ydot[6] = -ydot[0] + ydot[3]
-
+        ydot *= self.tt
         return ydot
