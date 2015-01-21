@@ -259,8 +259,8 @@ class Surface_Coupling(Coupling):
     Parent class for surface coupling functions. Separated from region coupling to make use for more efficient data structures (sparse matrices and alike).
     """
 
-
-class Sparse_Basic(Surface_Coupling):
+            
+class Surface_Basic(Surface_Coupling):
     """
     Coupling function for surface weights represented by sparse matrix. Only single coupling variable supported, g_ij has to be sparse matrix.
     """
