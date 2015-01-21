@@ -251,7 +251,7 @@ class Model(core.Type):
 
         return initial_conditions
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         """
         Defines the dynamic equations. That is, the derivative of the
         state-variables given their current state ``state_variables``, the past
@@ -759,7 +759,7 @@ class WilsonCowan(Model):
 
         LOG.debug('%s: inited.' % repr(self))
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
 
         .. math::
@@ -1059,7 +1059,7 @@ class ReducedSetFitzHughNagumo(Model):
 
         self.update_derived_parameters()
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
 
 
@@ -1088,8 +1088,8 @@ class ReducedSetFitzHughNagumo(Model):
         beta = state_variables[3, :]
         derivative = numpy.empty_like(state_variables)
         # sum the activity from the modes
-        c_0 = coupling[0, :].sum(axis=1)[:, numpy.newaxis]
-        lc = local_coupling[0,:]
+        c_0 = coupling[0, :].sum(axis=1, keepdims=1)
+        lc = local_coupling[0,:].sum(axis=1, keepdims=1)
 
         # TODO: generalize coupling variables to a matrix form
         # c_1 = coupling[1, :] # this cv represents alpha
@@ -1534,7 +1534,7 @@ class ReducedSetHindmarshRose(Model):
 
         self.update_derived_parameters()
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
         The equations of the population model for i-th mode at node q are:
 
@@ -1567,9 +1567,9 @@ class ReducedSetHindmarshRose(Model):
         gamma = state_variables[5, :]
         derivative = numpy.empty_like(state_variables)
 
-        c_0 = coupling[0, :].sum(axis=1)[:, numpy.newaxis]
+        c_0 = coupling[0, :].sum(axis=1, keepdims=1)
         # c_1 = coupling[1, :]
-        lc = local_coupling[0,:]
+        lc = local_coupling[0,:].sum(axis=1, keepdims=1)
 
         derivative[0] = (eta - self.a_i * xi ** 3 + self.b_i * xi ** 2 - tau +
                self.K11 * (numpy.dot(xi, self.A_ik) - xi) -
@@ -2008,7 +2008,7 @@ class JansenRit(Model):
         LOG.debug('%s: inited.' % repr(self))
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
         The dynamic equations were taken from [JR_1995]_
 
@@ -2161,7 +2161,7 @@ class JRFast(JansenRit):
     invalid_dfun_cache = True
 
     #@profile
-    def dfun(self, y, coupling, local_coupling=numpy.zeros(3), ev=numexpr.evaluate):
+    def dfun(self, y, coupling, local_coupling, ev=numexpr.evaluate):
 
         if self.invalid_dfun_cache:
             self.dy = y.copy() * 0.0
@@ -2434,7 +2434,7 @@ class ZetterbergJansen(Model):
         self.update_derived_parameters()
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
 
         .. math:: do something
@@ -2855,7 +2855,7 @@ class Generic2dOscillator(Model):
         LOG.debug("%s: inited." % repr(self))
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros((1,1,1)), ev=numexpr.evaluate):
+    def dfun(self, state_variables, coupling, local_coupling, ev=numexpr.evaluate):
         r"""
         The two state variables :math:`V` and :math:`W` are typically considered
         to represent a function of the neuron's membrane potential, such as the
@@ -3357,7 +3357,7 @@ class LarterBreakspear(Model):
         LOG.debug('%s: inited.' % repr(self))
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
         Dynamic equations:
 
@@ -3547,7 +3547,7 @@ class ReducedWongWang(Model):
         self.update_derived_parameters()
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
         Equations taken from [DPA_2013]_ , page 11242
 
@@ -3657,7 +3657,7 @@ class Kuramoto(Model):
         LOG.debug("%s: inited." % repr(self))
 
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3),
+    def dfun(self, state_variables, coupling, local_coupling,
              ev=numexpr.evaluate, sin=numpy.sin, pi2=numpy.pi * 2):
         r"""
         The :math:`\theta` variable is the phase angle of the oscillation.
@@ -3837,7 +3837,7 @@ class Hopfield(Model):
             self.cvar = numpy.array([0, 1], dtype=numpy.int32)
             # self.variables_of_interest = ["x", "theta"]
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfun(self, state_variables, coupling, local_coupling):
         r"""
         The fast, :math:`x`, and slow, :math:`\theta`, state variables are typically
         considered to represent a membrane potentials of nodes and the global inhibition term,
@@ -3857,7 +3857,7 @@ class Hopfield(Model):
         derivative = numpy.array([dx, dx])
         return derivative
 
-    def dfunDyn(self, state_variables, coupling, local_coupling=numpy.zeros(3)):
+    def dfunDyn(self, state_variables, coupling, local_coupling):
         r"""
         The fast, :math:`x`, and slow, :math:`\theta`, state variables are typically
         considered to represent a membrane potentials of nodes and the inhibition term(s),
@@ -4087,7 +4087,7 @@ class Epileptor(Model):
 
         LOG.info("%s: init'ed." % (repr(self),))
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3),
+    def dfun(self, state_variables, coupling, local_coupling,
              array=numpy.array, where=numpy.where, concat=numpy.concatenate):
         r"""
         Computes the derivatives of the state variables of the Epileptor
@@ -4350,7 +4350,7 @@ class EpileptorPermittivityCoupling(Model):
 
         LOG.info("%s: init'ed." % (repr(self),))
 
-    def dfun(self, state_variables, coupling, local_coupling=numpy.zeros(3),
+    def dfun(self, state_variables, coupling, local_coupling,
              array=numpy.array, where=numpy.where, concat=numpy.concatenate):
         r"""
         Computes the derivatives of the state variables of the Epileptor
