@@ -133,7 +133,7 @@ class Simulator(core.Type):
     
     surface_coupling = coupling_module.Surface_Coupling(
         label="Short-range coupling function",
-        default=coupling_module.Sparse_Basic(),
+        default=coupling_module.Surface_Basic(),
         required=False,
         order=2,
         doc="""The coupling function is applied to the activity propagated
